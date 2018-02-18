@@ -173,8 +173,8 @@ class AppNav extends React.Component {
           </Link>
         )
       } else {
-        repoNameItems = repoInfos.map(({ repoOwner, repoName }, index) => {
-          const currentRepoInfos = [{ repoOwner, repoName }]
+        repoNameItems = repoInfos.map((repoInfo, index) => {
+          const currentRepoInfos = [repoInfo]
 
           const repoLink = new selectors.FilterBuilder(
             filters.state,
@@ -185,7 +185,7 @@ class AppNav extends React.Component {
               {(index !== 0 && '&') || null}
               {/* Put an & between repo names */}
               <Link to={repoLink} className="repo-name">
-                {repoName}
+                {repoInfo.repoName}
               </Link>
             </span>
           )

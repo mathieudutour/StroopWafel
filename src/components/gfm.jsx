@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 import ultramarked from 'ultramarked'
 import linkify from 'gfm-linkify'
 import classnames from 'classnames'
-import { htmlEncode } from 'htmlencode'
 import IssueOrPullRequestBlurb from './issue-blurb'
 
 import { selectors } from '../redux/ducks/issue'
