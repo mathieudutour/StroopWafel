@@ -339,12 +339,6 @@ class IssueCard extends React.Component {
         const context = issueCard.isPullRequest()
           ? PULL_REQUEST_ISSUE_RELATION[edgeValue]
           : edgeValue
-        let title
-        if (issueCard.issue) {
-          title = (
-            <span className="related-issue-title">{issueCard.issue.title}</span>
-          )
-        }
         return (
           <div key={issueCard.key()} className="related-issue">
             <IssueOrPullRequestBlurb

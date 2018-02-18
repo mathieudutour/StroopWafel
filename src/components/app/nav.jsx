@@ -3,7 +3,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import * as BS from 'react-bootstrap'
-import { GearIcon, QuestionIcon, GraphIcon, TagIcon } from 'react-octicons'
+import { GearIcon, QuestionIcon, GraphIcon } from 'react-octicons'
 
 import {
   toggleShowSimpleList,
