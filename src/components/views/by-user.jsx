@@ -9,7 +9,7 @@ import Issue from '../issue'
 
 class KanbanColumn extends React.Component {
   render() {
-    const { login, cards, primaryRepoName, columnRegExp, filters } = this.props
+    const { user, cards, primaryRepoName, filters } = this.props
 
     const issueComponents = cards.map(card => {
       return (
@@ -18,7 +18,6 @@ class KanbanColumn extends React.Component {
           filters={filters}
           primaryRepoName={primaryRepoName}
           card={card}
-          columnRegExp={columnRegExp}
         />
       )
     })
@@ -26,13 +25,13 @@ class KanbanColumn extends React.Component {
     const heading = (
       <span className="user-title">
         <PersonIcon />
-        {login}
+        {user.login}
       </span>
     )
 
     return (
       <div className="kanban-board-column">
-        <IssueList title={heading} login={login}>
+        <IssueList title={heading} user={user}>
           {issueComponents}
         </IssueList>
       </div>
@@ -47,26 +46,26 @@ class UsersView extends React.Component {
   }
 
   render() {
-    const { repoInfos, cards, columnRegExp, filters } = this.props
+    const { repoInfos, cards, filters } = this.props
     const [{ repoName }] = repoInfos // primaryRepoName
 
-    const logins = new Set()
-    for (const card of this.props.cards) {
-      logins.add(card.issue.user.login)
+    const logins = {}
+    for (const card of cards) {
+      if (card.issue && card.issue.user) {
+        logins[card.issue.user.login] = card.issue.user
+      }
     }
-    const loginsArray = []
-    for (const login of logins) {
-      loginsArray.push(login)
-    }
-    loginsArray.sort()
+    const users = Object.keys(logins)
+      .sort()
+      .map(k => logins[k])
 
-    const kanbanColumns = loginsArray.map(login => {
+    const kanbanColumns = users.map(user => {
       // If we are filtering by a kanban column then only show that column
       // Otherwise show all columns
       const columnCards = cards.filter(card => {
         return (
-          (card.issue.owner && card.issue.owner.login === login) ||
-          card.issue.user.login === login
+          (card.issue.owner && card.issue.owner.login === user.login) ||
+          card.issue.user.login === user.login
         )
       })
 
@@ -76,12 +75,11 @@ class UsersView extends React.Component {
 
       return (
         <KanbanColumn
-          key={login}
+          key={user.login}
           filters={filters}
-          login={login}
+          user={user}
           cards={columnCards}
           primaryRepoName={repoName}
-          columnRegExp={columnRegExp}
         />
       )
     })
@@ -97,57 +95,7 @@ export default connect((state, ownProps) => {
     filters: new selectors.FilterBuilder(state.filter, repoInfos),
     settings: state.settings,
     cards: state.issues.cards,
-    columnRegExp: state.filter.columnRegExp,
     milestones: state.issues.milestones,
     filter: state.filter,
   }
 })(UsersView)
-
-// const RepoKanbanShell = React.createClass({
-//   displayName: 'RepoKanbanShell',
-//   componentWillMount() {
-//     // Needs to be called before `render()`
-//     IssueStore.startPolling();
-//   },
-//   componentWillUnmount() {
-//     IssueStore.stopPolling();
-//   },
-//   renderLoaded() {
-//     const {repoInfos, columnRegExp} = getFilters().getState();
-//
-//     const columnDataPromise =
-//       IssueStore.fetchIssues()
-//       .then((cards) => {
-//         const logins = new Set();
-//         for (const card of cards) {
-//           logins.add(card.issue.user.login);
-//         }
-//         const loginsArray = [];
-//         for (const login of logins) {
-//           loginsArray.push(login);
-//         }
-//         loginsArray.sort();
-//         return loginsArray;
-//       });
-//
-//     return (
-//       <Board {...this.props}
-//         repoInfos={repoInfos}
-//         columnRegExp={columnRegExp}
-//         type={UsersView}
-//         columnDataPromise={columnDataPromise}
-//       />
-//     );
-//   },
-//   render() {
-//
-//     return (
-//       <Loadable
-//         promise={CurrentUserStore.fetchUser()}
-//         renderLoaded={this.renderLoaded}
-//       />
-//     );
-//   }
-// });
-//
-// export default RepoKanbanShell;

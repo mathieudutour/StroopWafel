@@ -13,7 +13,6 @@ function emptyFilter() {
     states: ['open', 'close'],
     types: ['issue', 'pull-request'],
     columnLabels: [],
-    columnRegExp: KANBAN_LABEL,
   }
 }
 
@@ -56,7 +55,8 @@ function _fetchLastSeenUpdatesForRepo(
   return githubClient
     .getOcto()
     .then(({ repos }) => repos(repoOwner, repoName).issues[method](opts))
-    .then(({ items = [] } = {}) => {
+    .then(result => {
+      let items = Array.isArray(result) ? result : result.items
       // If a repository has 0 events it probably has not changed in a while
       // or never had any commits. Do not keep trying to fetch all the Issues though
       // so set the lastSeenAt to be something non-zero

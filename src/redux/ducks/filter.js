@@ -43,7 +43,6 @@ duck.addReducerCase(LOCATION_CHANGE, {
       userName: query.u,
       states: query.s ? parseArray(query.s) : initialState.states,
       types: query.t ? parseArray(query.t) : initialState.types,
-      columnRegExp: query.x ? new RegExp(query.x) : initialState.columnRegExp,
     }
   },
 })

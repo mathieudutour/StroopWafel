@@ -15,11 +15,7 @@ db.version(1).stores({
 window._db = db
 
 export function resetDatabases() {
-  return Promise.all([
-    db.issues.delete(),
-    db.repoLabels.delete(),
-    db.repositories.delete(),
-  ])
+  return db.delete().then(() => db.open())
 }
 
 export function fetchCards(filter, repoInfos) {

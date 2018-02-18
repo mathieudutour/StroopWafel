@@ -88,17 +88,17 @@ class MoveModal extends React.Component {
                 primaryRepoOwner={movingIssue.card.repoOwner}
               />
               <span className="issue-title">
-                {': '}
+                {' '}
                 {vertex.issue.title}
                 {relatedLabel}
               </span>
             </span>
           )
           return (
-            <li className="related-issue">
+            <li className="related-issue" key={vertex.number}>
               <BS.Checkbox
                 className="select-related-issue"
-                onClick={this.onToggleCheckbox(vertex)}
+                onChange={this.onToggleCheckbox(vertex)}
                 checked={!unCheckedCards[vertex.key()]}
               >
                 {checkLabel}

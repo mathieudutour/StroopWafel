@@ -55,8 +55,10 @@ export default class CacheHandler {
     console.log(
       'github-client: Dumping localStorage cache because it is too big'
     )
-    db.etags.delete()
-    this.storage.removeItem('octokat-cache')
+    this.cachedETags = {}
+    window.localStorage.removeItem('octokat-cache')
+    window.cacheDB = db
+    return db.delete().then(() => db.open())
   }
   get(method, path) {
     const ret = this.cachedETags[method + ' ' + path]

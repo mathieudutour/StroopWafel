@@ -17,6 +17,7 @@ import {
 
 import { tryToMoveIssue } from '../redux/ducks/issue'
 import { PULL_REQUEST_ISSUE_RELATION } from '../gfm-dom'
+import { KANBAN_LABEL } from '../helpers'
 
 import Loadable from './loadable'
 import GithubFlavoredMarkdown from './gfm'
@@ -54,8 +55,11 @@ const issueSource = {
         })
       )
     } else if (dropResult.title === 'No Milestone') {
-      alert(
-        'BUG: StroopWafel is currently unable to remove a milestone. Help us out by submitting a Pull Request!'
+      props.dispatch(
+        tryToMoveIssue({
+          card,
+          milestone: null,
+        })
       )
     } else {
       throw new Error(
@@ -203,7 +207,7 @@ class IssueCard extends React.Component {
   }
 
   render() {
-    const { card, primaryRepoName, columnRegExp, filters } = this.props
+    const { card, primaryRepoName, filters } = this.props
     const { issue, repoOwner, repoName } = card
 
     const { taskFinishedCount, taskTotalCount } = card.getTaskCounts()
@@ -232,9 +236,7 @@ class IssueCard extends React.Component {
     })
 
     const nonKanbanLabels = (issue.labels || []).filter(label => {
-      if (!columnRegExp || !columnRegExp.test(label.name)) {
-        return label
-      }
+      return !KANBAN_LABEL.test(label.name)
     })
     const labels = nonKanbanLabels.map(label => {
       const tooltip = (
@@ -350,8 +352,7 @@ class IssueCard extends React.Component {
               primaryRepoName={card.repoName}
               primaryRepoOwner={card.repoOwner}
               context={context}
-            />{' '}
-            {title}
+            />
           </div>
         )
       }
@@ -600,13 +601,7 @@ class Issue extends React.Component {
   }
 
   render() {
-    const {
-      card,
-      primaryRepoName,
-      columnRegExp,
-      settings,
-      filters,
-    } = this.props
+    const { card, primaryRepoName, settings, filters } = this.props
     const { isDragging, connectDragSource } = this.props
     const { issue } = card
     let node
@@ -621,7 +616,6 @@ class Issue extends React.Component {
         <IssueCard
           card={card}
           primaryRepoName={primaryRepoName}
-          columnRegExp={columnRegExp}
           isDragging={isDragging}
           filters={filters}
         />

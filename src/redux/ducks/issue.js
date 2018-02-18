@@ -2,6 +2,7 @@ import Duck from 'reduck'
 
 import BipartiteGraph from './utils/bipartite-graph'
 import { cardFactory, toIssueKey, getCard } from './utils/card'
+import { getNewLabels } from '../middlewares/utils/moveIssues'
 
 import {
   LOGOUT,
@@ -287,26 +288,32 @@ export const moveIssues = duck.defineAction(MOVE_ISSUES, {
     return {
       payload: { cards, update: { label, milestone } },
       meta: {
-        github: { action: 'moveIssue' },
+        github: { action: 'moveIssues' },
         optimist: true,
       },
     }
   },
   reducer(state, { payload }) {
-    // TODO optimist update
-    const key = toIssueKey(payload.card)
-    state.CARD_CACHE[key] = {
-      ...state.CARD_CACHE[key],
-      ...payload.update,
+    const { label, milestone } = payload.update
+    function getNewCard(card) {
+      if (label || label === null) {
+        card.issue.labels = getNewLabels(card, label)
+      } else if (milestone || milestone === null) {
+        card.issue.milestone = milestone
+      }
+      return card
     }
+    payload.cards.forEach(card => {
+      const key = toIssueKey(card)
+      state.CARD_CACHE[key] = getNewCard(state.CARD_CACHE[key])
+    })
+    const cardsKeys = payload.cards.map(toIssueKey)
     return {
       ...state,
+      movingIssue: null,
       cards: state.cards.map(c => {
-        if (toIssueKey(c) === toIssueKey(payload.card)) {
-          return {
-            ...c,
-            ...payload.update,
-          }
+        if (cardsKeys.indexOf(toIssueKey(c)) !== -1) {
+          return getNewCard(c)
         }
         return c
       }),

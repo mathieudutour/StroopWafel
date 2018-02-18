@@ -1,12 +1,9 @@
-import { KANBAN_LABEL } from '../../../helpers'
-
 export const DEFAULT_STATE = {
   milestoneTitles: [],
   tagNames: [],
   states: ['open'],
   types: ['issue', 'pull-request'],
   columnLabels: [],
-  columnRegExp: KANBAN_LABEL,
 }
 
 export function getReposFromParams(params) {
@@ -81,14 +78,6 @@ function addParams(options, key, vals, defaults) {
   }
 }
 
-function regexToString(reg) {
-  let s = reg.toString()
-  // Strip off the wrapping `/` marks
-  return s.substring(1, s.length - 1)
-}
-
-const KANBAN_LABEL_STRING = regexToString(KANBAN_LABEL)
-
 // Generate a URL based on various filters and whatnot
 export default function buildRoute(
   pathname,
@@ -97,7 +86,6 @@ export default function buildRoute(
     tagNames,
     columnLabels,
     userName,
-    columnRegExp,
     states,
     types,
     routeSegmentName,
@@ -120,9 +108,6 @@ export default function buildRoute(
   addParams(options, 'u', userName)
   addParams(options, 's', states, DEFAULT_STATE.states) // include the defaults so the URL is cleaner
   addParams(options, 't', types, DEFAULT_STATE.types)
-  if (columnRegExp) {
-    addParams(options, 'x', regexToString(columnRegExp), KANBAN_LABEL_STRING)
-  }
 
   const parts = []
   if (repoInfos.length) {
@@ -181,8 +166,6 @@ export class FilterBuilder {
     this.state = DEFAULT_STATE
     return this._immutable(DEFAULT_STATE, true)
   }
-  // addMilestone(ms)
-  // removeMilestone(ms)
   toggleMilestoneTitle(title) {
     return this._toggleKey('milestoneTitles', title)
   }
@@ -191,8 +174,6 @@ export class FilterBuilder {
       milestoneTitles: [],
     })
   }
-  // addTag(tag)
-  // removeTag(tag)
   toggleTagName(tagName) {
     return this._toggleKey('tagNames', tagName)
   }
@@ -205,8 +186,6 @@ export class FilterBuilder {
   toggleType(type) {
     return this._toggleKey('types', type)
   }
-  // setUser(user)
-  // clearUser()
   toggleUserName(name) {
     const { userName } = this.state
     if (userName) {
@@ -216,7 +195,6 @@ export class FilterBuilder {
       userName: name,
     })
   }
-  // setColumnRegExp(reStr)
   setRouteName(routeSegmentName) {
     return this._immutable({
       routeSegmentName,
@@ -226,6 +204,6 @@ export class FilterBuilder {
     return buildRoute(null, this.state, this.repoInfos)
   }
   getState() {
-    return Object.assign({}, this.state, { columnRegExp: KANBAN_LABEL })
+    return Object.assign({}, this.state)
   }
 }

@@ -6,7 +6,7 @@ import classnames from 'classnames'
 import { XIcon, SearchIcon, CheckIcon, MilestoneIcon } from 'react-octicons'
 import SavedFiltersButton from './saved-filters'
 
-import { UNCATEGORIZED_NAME } from '../../helpers'
+import { UNCATEGORIZED_NAME, KANBAN_LABEL } from '../../helpers'
 
 import GithubFlavoredMarkdown from '../gfm'
 
@@ -152,7 +152,7 @@ class FilterDropdown extends React.Component {
     // Remove the columns from the set of tagNames
     items = items
       .filter(({ text }) => {
-        return !state.columnRegExp.test(text)
+        return !KANBAN_LABEL.test(text)
       })
       .sort(sortByText)
 
@@ -207,9 +207,7 @@ class FilterDropdown extends React.Component {
 
     // Remove the non-columns
     items = items
-      .filter(({ text }) => {
-        return state.columnRegExp.test(text)
-      })
+      .filter(({ text }) => KANBAN_LABEL.test(text))
       // sort **BEFORE** stripping off the column index
       .sort(sortByText)
       .map(
@@ -221,7 +219,7 @@ class FilterDropdown extends React.Component {
           toggleHref,
           excludeHref,
         }) => {
-          text = text.replace(state.columnRegExp, '')
+          text = text.replace(KANBAN_LABEL, '')
           return {
             text,
             isSelected,
@@ -277,7 +275,7 @@ class FilterDropdown extends React.Component {
 
     // // Remove the columns from the set of milestoneTitles
     // items = _.filter(items, ({text}) => {
-    //   return !state.columnRegExp.test(text);
+    //   return !KANBAN_LABEL.test(text);
     // });
     items = items.sort(sortByText)
 

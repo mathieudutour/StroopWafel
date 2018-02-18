@@ -27,7 +27,7 @@ try {
 const DEFAULT_STATE = {
   isShowSimpleList: false,
   isHideUncategorized: false,
-  isShowEmptyColumns: false,
+  isShowEmptyColumns: true,
   viewingMode: VIEWING_MODE.DEV, // The "I want to focus on Issues" or "PullRequests" tri-state
   isShowPullRequestData: false, // By default (anon users) this is unchecked. Gets checked when user logs in
 }

@@ -132,13 +132,27 @@ class AppNav extends React.Component {
           <BS.MenuItem
             key="2"
             target="_blank"
-            title="View Source Code on GitHub"
-            href="https://github.com/mathieudutour/StroopWafel"
+            href="https://github.com/settings/tokens"
           >
-            View Source Code on GitHub
+            Review GitHub Access
           </BS.MenuItem>
           <BS.MenuItem key="3" divider />
-          <BS.MenuItem key="4" eventKey="1">
+          <BS.MenuItem
+            key="4"
+            target="_blank"
+            href="https://github.com/mathieudutour/StroopWafel/issues/new"
+          >
+            Report a Bug
+          </BS.MenuItem>
+          <BS.MenuItem
+            key="5"
+            target="_blank"
+            href="https://github.com/mathieudutour/StroopWafel"
+          >
+            View Source Code
+          </BS.MenuItem>
+          <BS.MenuItem key="6" divider />
+          <BS.MenuItem key="7" eventKey="1">
             <span onClick={() => this.props.dispatch(logout())}>Sign Out</span>
           </BS.MenuItem>
         </BS.NavDropdown>
@@ -331,12 +345,7 @@ class AppNav extends React.Component {
               >
                 <GraphIcon /> Gantt Chart
               </SettingsItem>
-              <SettingsItem
-                key="label-editing"
-                to={filters.setRouteName('labels').url()}
-              >
-                <TagIcon /> Label Editing
-              </SettingsItem>
+              <BS.MenuItem key="divider4" divider />
               <BS.MenuItem
                 key="reset-databases"
                 onClick={this.promptAndResetDatabases}

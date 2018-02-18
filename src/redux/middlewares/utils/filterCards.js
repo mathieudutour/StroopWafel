@@ -1,5 +1,5 @@
 import _ from 'underscore'
-import { UNCATEGORIZED_NAME } from '../../../helpers'
+import { UNCATEGORIZED_NAME, KANBAN_LABEL } from '../../../helpers'
 
 function matchesRepoInfo(repoInfos, card) {
   return repoInfos.some(({ repoOwner, repoName }) => {
@@ -36,7 +36,6 @@ export function filterCard(
     userName,
     states,
     types,
-    columnRegExp,
     tagNames,
     columnLabels,
   } = filter
@@ -109,7 +108,7 @@ export function filterCard(
   if (tagNames.indexOf(UNCATEGORIZED_NAME) >= 0) {
     let isUnlabeled = true
     issue.labels.forEach(label => {
-      if (columnRegExp.test(label.name)) {
+      if (KANBAN_LABEL.test(label.name)) {
         isUnlabeled = false
       }
     })
@@ -120,7 +119,7 @@ export function filterCard(
   if (tagNames.indexOf(`-${UNCATEGORIZED_NAME}`) >= 0) {
     let isUnlabeled = true
     issue.labels.forEach(label => {
-      if (columnRegExp.test(label.name)) {
+      if (KANBAN_LABEL.test(label.name)) {
         isUnlabeled = false
       }
     })
@@ -134,9 +133,9 @@ export function filterCard(
   // issue must have all the tags (except UNCATEGORIZED_NAME)
   // and MUST NOT have any of the excluded tags
   // and must have at least 1 of the columnLabels (but one of those might be UNCATEGORIZED_NAME)
-  let issueColumnNames = labelNames.filter(tagName => {
-    return columnRegExp.test(tagName)
-  })
+  let issueColumnNames = labelNames.filter(tagName =>
+    KANBAN_LABEL.test(tagName)
+  )
   // If the issue does not have a column then add UNCATEGORIZED_NAME to the set of columns to check if they are filtered
   if (issueColumnNames.length === 0) {
     issueColumnNames = [UNCATEGORIZED_NAME].concat(issueColumnNames)

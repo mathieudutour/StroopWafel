@@ -11,13 +11,7 @@ import GithubFlavoredMarkdown from '../gfm'
 
 class KanbanColumn extends React.Component {
   render() {
-    const {
-      milestone,
-      cards,
-      primaryRepoName,
-      columnRegExp,
-      filters,
-    } = this.props
+    const { milestone, cards, primaryRepoName, filters } = this.props
 
     const issueComponents = cards.map(card => {
       return (
@@ -26,7 +20,6 @@ class KanbanColumn extends React.Component {
           filters={filters}
           primaryRepoName={primaryRepoName}
           card={card}
-          columnRegExp={columnRegExp}
         />
       )
     })
@@ -70,14 +63,7 @@ class ByMilestoneView extends React.Component {
   }
 
   render() {
-    const {
-      milestones,
-      cards,
-      repoInfos,
-      columnRegExp,
-      settings,
-      filters,
-    } = this.props
+    const { milestones, cards, repoInfos, settings, filters } = this.props
 
     // Get the primary repo
     const [primaryRepo] = repoInfos
@@ -92,7 +78,6 @@ class ByMilestoneView extends React.Component {
         filters={filters}
         cards={uncategorizedCards}
         primaryRepoName={primaryRepo.repoName}
-        columnRegExp={columnRegExp}
       />
     )
 
@@ -121,7 +106,6 @@ class ByMilestoneView extends React.Component {
           milestone={milestone}
           cards={columnCards}
           primaryRepoName={primaryRepo.repoName}
-          columnRegExp={columnRegExp}
         />
       )
       return prev
@@ -143,43 +127,6 @@ export default connect((state, ownProps) => {
     filters: new selectors.FilterBuilder(state.filter, repoInfos),
     settings: state.settings,
     cards: state.issues.cards,
-    columnRegExp: state.filter.columnRegExp,
     milestones: state.issues.milestones,
   }
 })(ByMilestoneView)
-
-//
-// const RepoKanbanShell = React.createClass({
-//   componentWillMount() {
-//     // Needs to be called before `render()`
-//     IssueStore.startPolling();
-//   },
-//   componentWillUnmount() {
-//     IssueStore.stopPolling();
-//   },
-//   renderLoaded() {
-//     const {repoInfos, columnRegExp} = getFilters().getState();
-//     // pull out the primaryRepoName
-//     const [{repoOwner, repoName}] = repoInfos;
-//
-//     return (
-//       <Board {...this.props}
-//         repoInfos={repoInfos}
-//         columnRegExp={columnRegExp}
-//         type={ByMilestoneView}
-//         columnDataPromise={IssueStore.fetchMilestones(repoOwner, repoName)}
-//       />
-//     );
-//   },
-//   render() {
-//
-//     return (
-//       <Loadable
-//         promise={CurrentUserStore.fetchUser()}
-//         renderLoaded={this.renderLoaded}
-//       />
-//     );
-//   }
-// });
-
-// export default RepoKanbanShell;

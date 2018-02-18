@@ -149,7 +149,6 @@ class InnerMarkdown extends React.Component {
 export default connect(state => {
   return {
     emojis: state.emojis,
-    columnRegExp: state.filter.columnRegExp,
     cards: state.issues.CARD_CACHE,
   }
 })(InnerMarkdown)

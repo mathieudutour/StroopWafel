@@ -1,12 +1,12 @@
 import * as Database from '../../middlewares/utils/indexedDB'
 import { getDataFromHtml } from '../../../gfm-dom'
 
-export const toIssueKey = (repoOwner, repoName, number) => {
+export const toIssueKey = ({ repoOwner, repoName, number }) => {
   return `${repoOwner}/${repoName}#${number}`
 }
 
-export const getCard = (CARD_CACHE, { repoOwner, repoName, number }) => {
-  const key = toIssueKey(repoOwner, repoName, number)
+export const getCard = (CARD_CACHE, card) => {
+  const key = toIssueKey(card)
   return CARD_CACHE[key]
 }
 
@@ -33,7 +33,7 @@ export const cardFactory = (CARD_CACHE, GRAPH_CACHE) => (
     if (!cast) {
       GRAPH_CACHE.addCards([card], getCard.bind(this, CARD_CACHE))
     }
-    const key = toIssueKey(repoOwner, repoName, number)
+    const key = toIssueKey({ repoOwner, repoName, number })
     CARD_CACHE[key] = card
     return card
   }
@@ -111,13 +111,13 @@ export default class Card {
   }
   getRelated() {
     // return this._graph.getB(key).concat(this._graph.getA(key));
-    return this._graph.getB(this._graph.cardToKey(this))
+    return this._graph.getB(toIssueKey(this))
   }
   getRelatedIssues() {
-    return this._graph.getB(this._graph.cardToKey(this))
+    return this._graph.getB(toIssueKey(this))
   }
   getRelatedPullRequests() {
-    return this._graph.getA(this._graph.cardToKey(this))
+    return this._graph.getA(toIssueKey(this))
   }
   getUpdatedAt() {
     if (this.isPullRequest() && !this.pr) {
