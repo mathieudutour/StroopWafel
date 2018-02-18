@@ -1,8 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { PersonIcon } from 'react-octicons'
+import { Link } from 'react-router'
 
 import { selectors } from '../../redux/ducks/filter'
+import { filterCards, filterByUsers } from '../../redux/ducks/utils/filterCards'
 import { fetchIssues } from '../../redux/ducks/issue'
 import IssueList from '../issue-list'
 import Issue from '../issue'
@@ -18,16 +19,24 @@ class KanbanColumn extends React.Component {
           filters={filters}
           primaryRepoName={primaryRepoName}
           card={card}
+          oldUser={user}
         />
       )
     })
 
-    const heading = (
-      <span className="user-title">
-        <PersonIcon />
-        {user.login}
-      </span>
-    )
+    let heading
+    if (user) {
+      heading = (
+        <Link
+          className="user-title"
+          to={this.props.filters.toggleUsername(user.login).url()}
+        >
+          {user.login}
+        </Link>
+      )
+    } else {
+      heading = 'No Assignee'
+    }
 
     return (
       <div className="kanban-board-column">
@@ -46,36 +55,49 @@ class UsersView extends React.Component {
   }
 
   render() {
-    const { repoInfos, cards, filters } = this.props
+    const { repoInfos, cards, filters, settings, filter } = this.props
     const [{ repoName }] = repoInfos // primaryRepoName
 
     const logins = {}
-    for (const card of cards) {
-      if (card.issue && card.issue.user) {
-        logins[card.issue.user.login] = card.issue.user
+    cards.forEach(card => {
+      if (card.issue && card.issue.assignees && card.issue.assignees.length) {
+        card.issue.assignees.forEach(user => {
+          logins[user.login] = user
+        })
       }
-    }
-    const users = Object.keys(logins)
+    })
+
+    let users = Object.keys(logins)
       .sort()
       .map(k => logins[k])
 
-    const kanbanColumns = users.map(user => {
-      // If we are filtering by a kanban column then only show that column
-      // Otherwise show all columns
-      const columnCards = cards.filter(card => {
-        return (
-          (card.issue.owner && card.issue.owner.login === user.login) ||
-          card.issue.user.login === user.login
-        )
-      })
+    if (!settings.isHideUncategorized) {
+      users = [null].concat(users)
+    }
 
-      // Show the column when:
-      // isFilteringByColumn = label (the current column we are filtering on)
-      // !isFilteringByColumn && (!getShowEmptyColumns || columnCards.length)
+    const isFilteringByColumn = filter.username
+
+    const cardsToView = filterCards(cards, settings, filter)
+
+    const kanbanColumns = users.map(user => {
+      // if we are filtering and it's not the right column
+      if (isFilteringByColumn && (!user || filter.username !== user.login)) {
+        return null
+      }
+
+      const columnCards = filterByUsers(cardsToView, [user ? user.login : user])
+
+      if (
+        !isFilteringByColumn &&
+        !settings.isShowEmptyColumns &&
+        !columnCards.length
+      ) {
+        return null
+      }
 
       return (
         <KanbanColumn
-          key={user.login}
+          key={user ? user.login : 'uncategorized'}
           filters={filters}
           user={user}
           cards={columnCards}

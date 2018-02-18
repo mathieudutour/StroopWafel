@@ -9,7 +9,7 @@ import { _gotIssuesFromDB } from '../../ducks/issue'
 function emptyFilter() {
   return {
     milestoneTitles: [],
-    tagNames: [],
+    labels: [],
     states: ['open', 'close'],
     types: ['issue', 'pull-request'],
     columnLabels: [],
@@ -120,7 +120,7 @@ function _fetchUpdatesForRepo(githubClient, repo) {
             if (KANBAN_LABEL.test(label)) {
               filter.columnLabels.push(label)
             } else {
-              filter.tagNames.push(label)
+              filter.labels.push(label)
             }
             return filterCard(card, filter, [{ repoOwner, repoName }])
           })

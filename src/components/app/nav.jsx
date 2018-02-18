@@ -76,7 +76,7 @@ class AppNav extends React.Component {
   render() {
     let { userInfo, repoInfos, settings, filters, LABEL_CACHE } = this.props
     const { showModal } = this.state
-    const { userName, tagNames } = filters.getState()
+    const { username, labels } = filters.getState()
 
     // Note: The dashboard page does not have a list of repos
     const close = () => this.setState({ showModal: false })
@@ -86,12 +86,15 @@ class AppNav extends React.Component {
         <Logo />
       </Link>
     )
-    const filtering = tagNames.map(tagName => {
+    const filtering = labels.map(labelName => {
       // TODO: HACK. Find a better way to update the color of labels
-      const label = LABEL_CACHE[tagName] || { name: tagName, color: 'ffffff' }
+      const label = LABEL_CACHE[labelName] || {
+        name: labelName,
+        color: 'ffffff',
+      }
       return (
         <LabelBadge
-          key={tagName}
+          key={labelName}
           isFilterLink
           label={label}
           filters={filters}
@@ -99,14 +102,14 @@ class AppNav extends React.Component {
       )
     })
 
-    if (userName) {
+    if (username) {
       filtering.push(
         <Link
           key="user"
           className="badge"
-          to={filters.toggleUserName(userName).url()}
+          to={filters.toggleUsername(username).url()}
         >
-          {userName}
+          {username}
         </Link>
       )
     }
@@ -218,11 +221,14 @@ class AppNav extends React.Component {
 
     let managerMenu
     if (repoInfos.length) {
-      managerMenu = (
-        <SettingsItem key="manager" to={filters.setRouteName('by-user').url()}>
-          Issues by User
-        </SettingsItem>
-      )
+      managerMenu = [
+        <SettingsItem key="kanban" to={filters.setRouteName('kanban').url()}>
+          Kanban
+        </SettingsItem>,
+        <SettingsItem key="by-users" to={filters.setRouteName('by-user').url()}>
+          Issues by Assignee
+        </SettingsItem>,
+      ]
     }
 
     return (

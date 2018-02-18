@@ -1,4 +1,4 @@
-import { KANBAN_LABEL, UNCATEGORIZED_NAME } from '../../../helpers'
+import { KANBAN_LABEL } from '../../../helpers'
 import { VIEWING_MODE } from '../settings'
 
 export function filterByViewingMode(cards, viewingMode) {
@@ -42,11 +42,11 @@ export function filterByViewingMode(cards, viewingMode) {
 }
 
 export function filterByLabels(cards, labels) {
-  const hasUncategorizedLabel = labels.some(l => l.name === UNCATEGORIZED_NAME)
+  const hasUncategorizedLabel = labels.some(l => !l)
 
   return cards.filter(card => {
     const containsAtLeastOneLabel = card.issue.labels.some(cardLabel => {
-      return labels.some(label => cardLabel.name === label.name)
+      return labels.some(label => cardLabel.name === label)
     })
     if (containsAtLeastOneLabel) {
       return true
@@ -61,4 +61,55 @@ export function filterByLabels(cards, labels) {
       return true
     }
   })
+}
+
+export function filterByMilestones(cards, milestones) {
+  return cards.filter(card => {
+    const hasMilestone = !!card.issue.milestone
+    return milestones.some(
+      m =>
+        (!m && !hasMilestone) ||
+        (m && hasMilestone && m === card.issue.milestone.title)
+    )
+  })
+}
+
+export function filterByUsers(cards, users) {
+  return cards.filter(card => {
+    const hasAssignees = card.issue.assignees && card.issue.assignees.length
+    return users.some(
+      u =>
+        (!u && !hasAssignees) ||
+        (u &&
+          hasAssignees &&
+          card.issue.assignees.some(assignee => assignee.login === u))
+    )
+  })
+}
+
+export function filterCards(cards, settings, filter) {
+  let filtered = filterByViewingMode(cards, settings.viewingMode)
+
+  if (filter.labels && filter.labels.length) {
+    filtered = filterByLabels(cards, filter.labels)
+    if (!filtered.length) {
+      return filtered
+    }
+  }
+
+  if (filter.milestoneTitles && filter.milestoneTitles.length) {
+    filtered = filterByMilestones(cards, filter.milestoneTitles)
+    if (!filtered.length) {
+      return filtered
+    }
+  }
+
+  if (filter.username) {
+    filtered = filterByUsers(cards, [filter.username])
+    if (!filtered.length) {
+      return filtered
+    }
+  }
+
+  return filtered
 }

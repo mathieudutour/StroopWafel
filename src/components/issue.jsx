@@ -32,8 +32,7 @@ const ItemTypes = {
 const issueSource = {
   beginDrag(props) {
     // Return the data describing the dragged item
-    const item = props
-    return item
+    return props
   },
 
   endDrag(props, monitor) {
@@ -42,28 +41,29 @@ const issueSource = {
     }
 
     // When dropped on a compatible target, do something
-    const { card } = monitor.getItem()
+    const { card, oldUser } = monitor.getItem()
     const dropResult = monitor.getDropResult()
 
-    if (dropResult.label) {
+    if (dropResult.label || dropResult.label === null) {
       props.dispatch(tryToMoveIssue({ card, label: dropResult.label }))
-    } else if (dropResult.milestone) {
+    } else if (dropResult.milestone || dropResult.milestone === null) {
       props.dispatch(
         tryToMoveIssue({
           card,
           milestone: dropResult.milestone,
         })
       )
-    } else if (dropResult.title === 'No Milestone') {
+    } else if (dropResult.user || dropResult.user === null) {
       props.dispatch(
         tryToMoveIssue({
           card,
-          milestone: null,
+          user: dropResult.user,
+          oldUser: oldUser,
         })
       )
     } else {
       throw new Error(
-        'BUG: Only know how to move to a kanban label or a milestone'
+        'BUG: Only know how to move to a kanban label or a milestone or an assignee'
       )
     }
   },
@@ -97,7 +97,7 @@ class IssueSimple extends React.Component {
     if (user) {
       assignedAvatar = (
         <Link
-          to={filters.toggleUserName(user.login).url()}
+          to={filters.toggleUsername(user.login).url()}
           className="avatar-filter"
         >
           <img
@@ -223,7 +223,7 @@ class IssueCard extends React.Component {
     const assignedAvatars = (
       issue.assignees || (issue.assignee ? [issue.assignee] : [])
     ).map(user => {
-      const link = filters.toggleUserName(user.login).url()
+      const link = filters.toggleUsername(user.login).url()
       return (
         <Link key={link} to={link} className="pull-right">
           <img

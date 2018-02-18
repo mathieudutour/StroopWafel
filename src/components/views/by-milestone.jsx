@@ -1,10 +1,13 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { MilestoneIcon } from 'react-octicons'
 
 import { selectors } from '../../redux/ducks/filter'
 import { fetchMilestones, fetchIssues } from '../../redux/ducks/issue'
+import {
+  filterCards,
+  filterByMilestones,
+} from '../../redux/ducks/utils/filterCards'
 import IssueList from '../issue-list'
 import Issue from '../issue'
 import GithubFlavoredMarkdown from '../gfm'
@@ -31,7 +34,6 @@ class KanbanColumn extends React.Component {
           className="milestone-title"
           to={this.props.filters.toggleMilestoneTitle(milestone.title).url()}
         >
-          <MilestoneIcon />
           <GithubFlavoredMarkdown
             inline
             disableLinks={true}
@@ -63,60 +65,62 @@ class ByMilestoneView extends React.Component {
   }
 
   render() {
-    const { milestones, cards, repoInfos, settings, filters } = this.props
+    const {
+      milestones,
+      cards,
+      repoInfos,
+      settings,
+      filters,
+      filter,
+    } = this.props
 
     // Get the primary repo
     const [primaryRepo] = repoInfos
 
-    const uncategorizedCards = cards.filter(card => {
-      return !card.issue.milestone
-    })
+    let allMilestones = milestones
 
-    const uncategorizedColumn = (
-      <KanbanColumn
-        settings={settings}
-        filters={filters}
-        cards={uncategorizedCards}
-        primaryRepoName={primaryRepo.repoName}
-      />
-    )
+    if (!settings.isHideUncategorized) {
+      allMilestones = [null].concat(allMilestones)
+    }
 
-    const kanbanColumns = milestones.reduce((prev, milestone) => {
+    const isFilteringByColumn = filter.milestoneTitles.length
+
+    const cardsToView = filterCards(cards, settings, filter)
+
+    const kanbanColumns = allMilestones.map(milestone => {
+      // if we are filtering and it's not the right column
       if (
-        filters.state.milestoneTitles.length &&
-        filters.state.milestoneTitles.indexOf(milestone.title) === -1
+        isFilteringByColumn &&
+        (!milestone || filter.milestoneTitles.every(c => c !== milestone.title))
       ) {
-        return prev
+        return null
       }
 
-      // If we are filtering by a kanban column then only show that column
-      // Otherwise show all columns
-      const columnCards = cards.filter(card => {
-        return (
-          card.issue.milestone && card.issue.milestone.title === milestone.title
-        )
-      })
+      const columnCards = filterByMilestones(cardsToView, [
+        milestone ? milestone.title : milestone,
+      ])
 
-      /*HACK: Column should handle milestones */
-      prev.push(
+      if (
+        !isFilteringByColumn &&
+        !settings.isShowEmptyColumns &&
+        !columnCards.length
+      ) {
+        return null
+      }
+
+      return (
         <KanbanColumn
           settings={settings}
-          filters={this.props.filters}
-          key={milestone.title}
+          filters={filters}
+          key={milestone ? milestone.title : 'uncategorized'}
           milestone={milestone}
           cards={columnCards}
           primaryRepoName={primaryRepo.repoName}
         />
       )
-      return prev
-    }, [])
+    })
 
-    return (
-      <div className="kanban-board">
-        {!settings.isHideUncategorized && uncategorizedColumn}
-        {kanbanColumns}
-      </div>
-    )
+    return <div className="kanban-board">{kanbanColumns}</div>
   }
 }
 
@@ -124,6 +128,7 @@ export default connect((state, ownProps) => {
   const repoInfos = selectors.getReposFromParams(ownProps.params)
   return {
     repoInfos,
+    filter: state.filter,
     filters: new selectors.FilterBuilder(state.filter, repoInfos),
     settings: state.settings,
     cards: state.issues.cards,

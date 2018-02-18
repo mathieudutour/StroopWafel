@@ -2,7 +2,7 @@ import Duck from 'reduck'
 
 import BipartiteGraph from './utils/bipartite-graph'
 import { cardFactory, toIssueKey, getCard } from './utils/card'
-import { getNewLabels } from '../middlewares/utils/moveIssues'
+import { getNewLabels, getNewAssignees } from '../middlewares/utils/moveIssues'
 
 import {
   LOGOUT,
@@ -149,9 +149,9 @@ export const fetchMilestones = duck.defineAction(FETCH_MILESTONES, {
 })
 
 export const tryToMoveIssue = duck.defineAction(TRY_MOVE_ISSUE, {
-  creator({ card, label, milestone }) {
+  creator({ card, label, milestone, user, oldUser }) {
     return {
-      payload: { card, label, milestone },
+      payload: { card, label, milestone, user, oldUser },
     }
   },
   reducer(state, { payload }) {
@@ -284,9 +284,9 @@ export const updateIssue = duck.defineAction(UPDATE_ISSUE, {
 })
 
 export const moveIssues = duck.defineAction(MOVE_ISSUES, {
-  creator(cards, { label, milestone }) {
+  creator(cards, { label, milestone, user, oldUser }) {
     return {
-      payload: { cards, update: { label, milestone } },
+      payload: { cards, update: { label, milestone, user, oldUser } },
       meta: {
         github: { action: 'moveIssues' },
         optimist: true,
@@ -294,12 +294,14 @@ export const moveIssues = duck.defineAction(MOVE_ISSUES, {
     }
   },
   reducer(state, { payload }) {
-    const { label, milestone } = payload.update
+    const { label, milestone, user, oldUser } = payload.update
     function getNewCard(card) {
       if (label || label === null) {
         card.issue.labels = getNewLabels(card, label)
       } else if (milestone || milestone === null) {
         card.issue.milestone = milestone
+      } else if (user || user === null) {
+        card.issue.assignees = getNewAssignees(card, user, oldUser)
       }
       return card
     }

@@ -2,7 +2,6 @@ import { KANBAN_LABEL, UNCATEGORIZED_NAME } from '../../../helpers'
 
 export function getNewLabels(card, label) {
   // Find all the labels, remove the kanbanLabel
-  // Exclude Kanban labels
   const labels = card.issue.labels.filter(_label => {
     return UNCATEGORIZED_NAME !== _label.name && !KANBAN_LABEL.test(_label.name)
   })
@@ -14,7 +13,27 @@ export function getNewLabels(card, label) {
   return labels
 }
 
-export default function moveIssues(githubClient, cards, { label, milestone }) {
+export function getNewAssignees(card, newAssignee, oldAssignee) {
+  // Find all the assignes and remove the assignees we are messing with
+  const assignees = card.issue.assignees.filter(assignee => {
+    return (
+      (!oldAssignee || assignee.login !== oldAssignee.login) &&
+      (!newAssignee || assignee.login !== newAssignee.login)
+    )
+  })
+
+  if (newAssignee) {
+    assignees.push(newAssignee)
+  }
+
+  return assignees
+}
+
+export default function moveIssues(
+  githubClient,
+  cards,
+  { label, milestone, user, oldUser }
+) {
   return githubClient.getOcto().then(({ repos }) => {
     return Promise.all(
       cards.map(card => {
@@ -25,6 +44,12 @@ export default function moveIssues(githubClient, cards, { label, milestone }) {
           return repos(card.repoOwner, card.repoName)
             .issues(card.issue.number)
             .update({ labels: labelNames })
+        } else if (user || user === null) {
+          const assignees = getNewAssignees(card, user, oldUser)
+
+          return repos(card.repoOwner, card.repoName)
+            .issues(card.issue.number)
+            .update({ assignees: assignees.map(u => u.login) })
         } else if (milestone) {
           return repos(card.repoOwner, card.repoName)
             .milestones.fetchAll()

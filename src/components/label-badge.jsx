@@ -37,7 +37,7 @@ class LabelBadge extends React.Component {
     if (isFilterLink) {
       return (
         <Link
-          to={filters.toggleTagName(label.name).url()}
+          to={filters.toggleLabel(label.name).url()}
           key={name}
           onClick={onClick}
           className={className}

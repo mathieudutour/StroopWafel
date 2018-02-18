@@ -107,14 +107,14 @@ class FilterDropdown extends React.Component {
     open: false,
   }
 
-  renderTagNames = items => {
+  renderLabels = items => {
     const { filters } = this.props
     const state = filters.getState()
     items = items.map(item => {
       const name = item.name
 
-      const isSelected = state.tagNames.indexOf(name) >= 0
-      const isExcluded = state.tagNames.indexOf(`-${name}`) >= 0
+      const isSelected = state.labels.indexOf(name) >= 0
+      const isExcluded = state.labels.indexOf(`-${name}`) >= 0
       const iconNode = (
         <span
           className="item-icon tag-name-color"
@@ -125,19 +125,19 @@ class FilterDropdown extends React.Component {
       let excludeHref
       if (isExcluded) {
         toggleHref = filters
-          .toggleTagName(`-${name}`)
-          .toggleTagName(name)
+          .toggleLabel(`-${name}`)
+          .toggleLabel(name)
           .url()
-        excludeHref = filters.toggleTagName(`-${name}`).url()
+        excludeHref = filters.toggleLabel(`-${name}`).url()
       } else if (isSelected) {
-        toggleHref = filters.toggleTagName(name).url()
+        toggleHref = filters.toggleLabel(name).url()
         excludeHref = filters
-          .toggleTagName(name)
-          .toggleTagName(`-${name}`)
+          .toggleLabel(name)
+          .toggleLabel(`-${name}`)
           .url()
       } else {
-        toggleHref = filters.toggleTagName(name).url()
-        excludeHref = filters.toggleTagName(`-${name}`).url()
+        toggleHref = filters.toggleLabel(name).url()
+        excludeHref = filters.toggleLabel(`-${name}`).url()
       }
       return {
         text: name,
@@ -149,7 +149,7 @@ class FilterDropdown extends React.Component {
       }
     })
 
-    // Remove the columns from the set of tagNames
+    // Remove the columns from the set of labels
     items = items
       .filter(({ text }) => {
         return !KANBAN_LABEL.test(text)
@@ -234,7 +234,7 @@ class FilterDropdown extends React.Component {
     return <FilterCategory items={items} name="columns" />
   }
 
-  // copy/pasta from renderTagNames
+  // copy/pasta from renderLabels
   renderMilestones = items => {
     const { filters } = this.props
     const state = filters.getState()
@@ -344,9 +344,7 @@ class FilterDropdown extends React.Component {
           <BS.Panel.Heading>
             <BS.Panel.Title toggle>Labels</BS.Panel.Title>
           </BS.Panel.Heading>
-          <BS.Panel.Body collapsible>
-            {this.renderTagNames(labels)}
-          </BS.Panel.Body>
+          <BS.Panel.Body collapsible>{this.renderLabels(labels)}</BS.Panel.Body>
         </BS.Panel>
         <BS.Panel className="filter-category">
           <BS.Panel.Heading>

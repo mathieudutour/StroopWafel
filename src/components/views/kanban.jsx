@@ -4,14 +4,10 @@ import { Link } from 'react-router'
 import isDeepEqual from 'fast-deep-equal'
 
 import { selectors } from '../../redux/ducks/filter'
-import {
-  KANBAN_LABEL,
-  UNCATEGORIZED_NAME,
-  sortByColumnName,
-} from '../../helpers'
+import { KANBAN_LABEL, sortByColumnName } from '../../helpers'
 import { fetchLabels, fetchIssues } from '../../redux/ducks/issue'
 import {
-  filterByViewingMode,
+  filterCards,
   filterByLabels,
 } from '../../redux/ducks/utils/filterCards'
 import IssueList from '../issue-list'
@@ -28,7 +24,7 @@ const filterKanbanLabels = labels => {
 
 class KanbanColumn extends React.Component {
   render() {
-    const { label, cards, primaryRepo, settings, filters } = this.props
+    const { label, cards, primaryRepo, filters } = this.props
 
     const issueComponents = cards.map(card => {
       return (
@@ -41,32 +37,33 @@ class KanbanColumn extends React.Component {
       )
     })
 
-    let name
-    if (KANBAN_LABEL.test(label.name)) {
-      name = label.name.replace(/^\d+ - /, ' ')
-    } else {
-      name = label.name
-    }
-    const title = (
-      <Link
-        className="label-title"
-        to={filters.toggleColumnLabel(label.name).url()}
-      >
-        {name}
-      </Link>
-    )
-
-    if (issueComponents.length || settings.isShowEmptyColumns) {
-      return (
-        <div key={label.name} className="kanban-board-column">
-          <IssueList title={title} label={label}>
-            {issueComponents}
-          </IssueList>
-        </div>
+    let heading
+    if (label) {
+      let name
+      if (KANBAN_LABEL.test(label.name)) {
+        name = label.name.replace(/^\d+ - /, ' ')
+      } else {
+        name = label.name
+      }
+      heading = (
+        <Link
+          className="label-title"
+          to={filters.toggleColumnLabel(label.name).url()}
+        >
+          {name}
+        </Link>
       )
     } else {
-      return null // TODO: Maybe the panel should say "No Issues" (but only if it's the only column)
+      heading = 'Uncategorized'
     }
+
+    return (
+      <div className="kanban-board-column">
+        <IssueList title={heading} label={label}>
+          {issueComponents}
+        </IssueList>
+      </div>
+    )
   }
 }
 
@@ -99,21 +96,18 @@ class KanbanRepo extends React.Component {
       repoInfos,
       settings,
       filters,
+      filter,
       fetchingIssues,
     } = this.props
 
     // Get the primary repo
     const [primaryRepo] = repoInfos
 
-    let allLabels
-    if (!settings.isHideUncategorized) {
-      const uncategorized = [{ name: UNCATEGORIZED_NAME }]
-      allLabels = uncategorized.concat(labels)
-    } else {
-      allLabels = labels
-    }
+    let kanbanLabels = filterKanbanLabels(labels)
 
-    const kanbanLabels = filterKanbanLabels(allLabels)
+    if (!settings.isHideUncategorized) {
+      kanbanLabels = [null].concat(kanbanLabels)
+    }
 
     if (
       !!showedWarning &&
@@ -126,37 +120,41 @@ class KanbanRepo extends React.Component {
       )
     }
 
-    const isFilteringByColumn = false
+    const isFilteringByColumn = filter.columnLabels.length
 
-    const cardsToView = filterByViewingMode(cards, settings.viewingMode)
+    const cardsToView = filterCards(cards, settings, filter)
 
     const kanbanColumns = kanbanLabels.map(label => {
-      // If we are filtering by a kanban column then only show that column
-      // Otherwise show all columns
-      const columnCards = filterByLabels(cardsToView, [label])
-
-      // Show the column when:
-      // isFilteringByColumn = label (the current column we are filtering on)
-      // !isFilteringByColumn && (!getShowEmptyColumns || columnCards.length)
-
+      // if we are filtering and it's not the right column
       if (
-        (!isFilteringByColumn &&
-          (settings.isShowEmptyColumns || columnCards.length)) ||
-        (isFilteringByColumn && isFilteringByColumn.name === label.name)
+        isFilteringByColumn &&
+        (!label || filter.columnLabels.every(c => c !== label.name))
       ) {
-        return (
-          <KanbanColumn
-            filters={filters}
-            settings={settings}
-            key={label.name}
-            label={label}
-            cards={columnCards}
-            primaryRepo={primaryRepo}
-          />
-        )
-      } else {
         return null
       }
+
+      const columnCards = filterByLabels(cardsToView, [
+        label ? label.name : label,
+      ])
+
+      if (
+        !isFilteringByColumn &&
+        !settings.isShowEmptyColumns &&
+        !columnCards.length
+      ) {
+        return null
+      }
+
+      return (
+        <KanbanColumn
+          filters={filters}
+          settings={settings}
+          key={label ? label.name : 'uncategorized'}
+          label={label}
+          cards={columnCards}
+          primaryRepo={primaryRepo}
+        />
+      )
     })
 
     return (

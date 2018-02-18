@@ -10,13 +10,13 @@ function matchesRepoInfo(repoInfos, card) {
   })
 }
 
-function isUser(issue, userName) {
+function isUser(issue, username) {
   if (issue.assignee) {
-    if (issue.assignee.login !== userName) {
+    if (issue.assignee.login !== username) {
       return false
     }
   }
-  if (issue.user.login !== userName) {
+  if (issue.user.login !== username) {
     return false
   }
   return true
@@ -26,24 +26,24 @@ export function filterCard(
   card,
   filter,
   repoInfos,
-  includedTagNames,
-  excludedTagNames,
+  includedLabelNames,
+  excludedLabelNames,
   includedMilestoneTitles,
   excludedMilestoneTitles
 ) {
   const {
     milestoneTitles,
-    userName,
+    username,
     states,
     types,
-    tagNames,
+    labels,
     columnLabels,
   } = filter
-  if (!includedTagNames) {
-    includedTagNames = tagNames.filter(t => t[0] !== '-')
+  if (!includedLabelNames) {
+    includedLabelNames = labels.filter(t => t[0] !== '-')
   }
-  if (!excludedTagNames) {
-    excludedTagNames = tagNames.filter(t => t[0] !== '-')
+  if (!excludedLabelNames) {
+    excludedLabelNames = labels.filter(t => t[0] !== '-')
   }
   if (!includedMilestoneTitles) {
     includedMilestoneTitles = milestoneTitles.filter(m => m[0] !== '-')
@@ -70,14 +70,14 @@ export function filterCard(
   }
 
   // issue must match the user if one is selected (either assignee or creator (if none))
-  if (userName) {
+  if (username) {
     // Support negating the username
-    if (userName[0] === '-') {
-      if (isUser(issue, userName.substring(1))) {
+    if (username[0] === '-') {
+      if (isUser(issue, username.substring(1))) {
         return false
       }
     } else {
-      if (!isUser(issue, userName)) {
+      if (!isUser(issue, username)) {
         return false
       }
     }
@@ -104,8 +104,8 @@ export function filterCard(
       }
     }
   }
-  // If one of the tagNames is UNCATEGORIZED_NAME then do something special
-  if (tagNames.indexOf(UNCATEGORIZED_NAME) >= 0) {
+  // If one of the labels is UNCATEGORIZED_NAME then do something special
+  if (labels.indexOf(UNCATEGORIZED_NAME) >= 0) {
     let isUnlabeled = true
     issue.labels.forEach(label => {
       if (KANBAN_LABEL.test(label.name)) {
@@ -116,7 +116,7 @@ export function filterCard(
       return false
     }
   }
-  if (tagNames.indexOf(`-${UNCATEGORIZED_NAME}`) >= 0) {
+  if (labels.indexOf(`-${UNCATEGORIZED_NAME}`) >= 0) {
     let isUnlabeled = true
     issue.labels.forEach(label => {
       if (KANBAN_LABEL.test(label.name)) {
@@ -145,22 +145,22 @@ export function filterCard(
     return false
   }
   if (
-    _.difference(_.without(includedTagNames, UNCATEGORIZED_NAME), labelNames)
+    _.difference(_.without(includedLabelNames, UNCATEGORIZED_NAME), labelNames)
       .length > 0
   ) {
     return false
   }
-  if (_.intersection(excludedTagNames, labelNames).length > 0) {
+  if (_.intersection(excludedLabelNames, labelNames).length > 0) {
     return false
   }
   return true
 }
 
 export default function filterCards(cards, filter, repoInfos) {
-  const { milestoneTitles, tagNames } = filter
+  const { milestoneTitles, labels } = filter
 
-  const includedTagNames = tagNames.filter(t => t[0] !== '-')
-  const excludedTagNames = tagNames
+  const includedLabelNames = labels.filter(t => t[0] !== '-')
+  const excludedLabelNames = labels
     .filter(t => t[0] === '-')
     .map(t => t.substring(1))
 
@@ -174,8 +174,8 @@ export default function filterCards(cards, filter, repoInfos) {
       card,
       filter,
       repoInfos,
-      includedTagNames,
-      excludedTagNames,
+      includedLabelNames,
+      excludedLabelNames,
       includedMilestoneTitles,
       excludedMilestoneTitles
     )

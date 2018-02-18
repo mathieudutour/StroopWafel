@@ -1,9 +1,10 @@
 export const DEFAULT_STATE = {
   milestoneTitles: [],
-  tagNames: [],
+  labels: [],
   states: ['open'],
   types: ['issue', 'pull-request'],
   columnLabels: [],
+  username: null,
 }
 
 export function getReposFromParams(params) {
@@ -83,9 +84,9 @@ export default function buildRoute(
   pathname,
   {
     milestoneTitles,
-    tagNames,
+    labels,
     columnLabels,
-    userName,
+    username,
     states,
     types,
     routeSegmentName,
@@ -93,7 +94,7 @@ export default function buildRoute(
   repoInfos = []
 ) {
   milestoneTitles = milestoneTitles || []
-  tagNames = tagNames || []
+  labels = labels || []
 
   // when not changing the page then keep the original path segment
   // **BUT:** Allow setting '' explicitly to override this
@@ -103,9 +104,9 @@ export default function buildRoute(
 
   const options = {}
   addParams(options, 'm', milestoneTitles)
-  addParams(options, 'l', tagNames)
+  addParams(options, 'l', labels)
   addParams(options, 'c', columnLabels)
-  addParams(options, 'u', userName)
+  addParams(options, 'u', username)
   addParams(options, 's', states, DEFAULT_STATE.states) // include the defaults so the URL is cleaner
   addParams(options, 't', types, DEFAULT_STATE.types)
 
@@ -174,8 +175,8 @@ export class FilterBuilder {
       milestoneTitles: [],
     })
   }
-  toggleTagName(tagName) {
-    return this._toggleKey('tagNames', tagName)
+  toggleLabel(label) {
+    return this._toggleKey('labels', label)
   }
   toggleColumnLabel(columnLabel) {
     return this._toggleKey('columnLabels', columnLabel)
@@ -186,13 +187,13 @@ export class FilterBuilder {
   toggleType(type) {
     return this._toggleKey('types', type)
   }
-  toggleUserName(name) {
-    const { userName } = this.state
-    if (userName) {
+  toggleUsername(name) {
+    const { username } = this.state
+    if (username) {
       name = null
     }
     return this._immutable({
-      userName: name,
+      username: name,
     })
   }
   setRouteName(routeSegmentName) {

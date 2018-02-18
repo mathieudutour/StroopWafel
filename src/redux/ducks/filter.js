@@ -38,9 +38,9 @@ duck.addReducerCase(LOCATION_CHANGE, {
       milestoneTitles: query.m
         ? parseArray(query.m)
         : initialState.milestoneTitles,
-      tagNames: query.l ? parseArray(query.l) : initialState.tagNames,
+      labels: query.l ? parseArray(query.l) : initialState.labels,
       columnLabels: query.c ? parseArray(query.c) : initialState.columnLabels,
-      userName: query.u,
+      username: query.u,
       states: query.s ? parseArray(query.s) : initialState.states,
       types: query.t ? parseArray(query.t) : initialState.types,
     }

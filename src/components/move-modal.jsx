@@ -16,14 +16,19 @@ class MoveModal extends React.Component {
   componentWillReceiveProps(nextProps) {
     // If this card has related cards then show the modal.
     // Otherwise, just perform the move
-    if (
-      nextProps.movingIssue &&
-      nextProps.movingIssue.card.getRelated().length === 0
-    ) {
-      if (nextProps.movingIssue.label || nextProps.movingIssue.milestone) {
+    const { movingIssue } = nextProps
+    if (movingIssue && movingIssue.card.getRelated().length === 0) {
+      if (
+        movingIssue.label ||
+        movingIssue.label === null ||
+        movingIssue.milestone ||
+        movingIssue.milestone === null ||
+        movingIssue.user ||
+        movingIssue.user === null
+      ) {
         this.moveIssue(nextProps)
       }
-    } else if (this.props.movingIssue && !nextProps.movingIssue) {
+    } else if (this.props.movingIssue && !movingIssue) {
       this.setState({ unCheckedCards: {} })
     }
   }
@@ -43,7 +48,7 @@ class MoveModal extends React.Component {
   }
 
   moveIssue = props => {
-    const { card, label, milestone } = props.movingIssue
+    const { card, label, milestone, user, oldUser } = props.movingIssue
     const { unCheckedCards } = this.state
     const allOtherCards = (card.getRelated() || []).map(({ vertex }) => vertex)
     const otherCardsToMove = _.difference(
@@ -52,7 +57,12 @@ class MoveModal extends React.Component {
     )
 
     props.dispatch(
-      moveIssues(otherCardsToMove.concat(card), { label, milestone })
+      moveIssues(otherCardsToMove.concat(card), {
+        label,
+        milestone,
+        user,
+        oldUser,
+      })
     )
   }
 
@@ -130,10 +140,20 @@ class MoveModal extends React.Component {
       let dest
       if (movingIssue.label) {
         dest = <LabelBadge label={movingIssue.label} />
+      } else if (movingIssue.label === null) {
+        dest = 'Uncategorized'
       } else if (movingIssue.milestone) {
         dest = movingIssue.milestone.title
+      } else if (movingIssue.milestone === null) {
+        dest = 'No Milestone'
+      } else if (movingIssue.user) {
+        dest = movingIssue.user.login
+      } else if (movingIssue.user === null) {
+        dest = 'No Assignee'
       } else {
-        throw new Error('BUG: only know how to move to a label or milestone')
+        throw new Error(
+          'BUG: only know how to move to a label or milestone or an assignee'
+        )
       }
 
       return (
