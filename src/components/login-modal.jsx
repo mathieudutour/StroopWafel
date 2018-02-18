@@ -96,7 +96,7 @@ class Login extends React.Component {
                 </a>
               </li>
               <li>
-                Provide a descriptive title (like "gh-board") in the "Token
+                Provide a descriptive title (like "StroopWafel") in the "Token
                 Description"
               </li>
               <li>

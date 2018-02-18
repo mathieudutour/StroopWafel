@@ -22,7 +22,7 @@ export default class extends React.Component {
               It looks like either you do not have permission to see this
               repository or the rate limit for requests to GitHub has been
               exceeded. This usually happens when you are not logged in to
-              gh-board. Try signing in to continue.
+              StroopWafel. Try signing in to continue.
             </p>
             <code>{err.message}</code>
           </div>
@@ -30,7 +30,7 @@ export default class extends React.Component {
       } else if (err.name === 'InvalidStateError') {
         return (
           <span>
-            It looks like your browser is in private browsing mode. gh-board
+            It looks like your browser is in private browsing mode. StroopWafel
             uses IndexedDB to cache requests to GitHub. Please disable Private
             Browsing to see it work.
           </span>

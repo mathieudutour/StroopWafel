@@ -4,7 +4,7 @@ import { FETCH_EMOJIS } from '../actions'
 
 let storedSettings
 try {
-  storedSettings = JSON.parse(window.localStorage.getItem('gh-board-emojis'))
+  storedSettings = JSON.parse(window.localStorage.getItem('stroopwafel-emojis'))
 } catch (err) {
   storedSettings = undefined
 }

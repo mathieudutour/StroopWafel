@@ -45,7 +45,7 @@ export default class GithubClient extends EventEmitter {
   fetchCredentialsFromStorage() {
     try {
       this.credentials = JSON.parse(
-        window.localStorage.getItem('gh-board-user')
+        window.localStorage.getItem('stroopwafel-user')
       )
     } catch (err) {
       this.credentials = {}

@@ -282,7 +282,7 @@ class CustomRepoModal extends React.Component {
           <p>Enter the repository owner and name:</p>
           <BS.FormControl
             type="text"
-            placeholder="Example: philschatz/gh-board"
+            placeholder="Example: mathieudutour/StroopWafel"
             bsStyle={(isInvalid && 'error') || null}
             onChange={this.onCustomRepoChange}
           />

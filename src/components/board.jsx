@@ -98,9 +98,9 @@ class Board extends React.Component {
     if (err.name === 'InvalidStateError') {
       return (
         <span>
-          It looks like your browser is in private browsing mode. gh-board uses
-          IndexedDB to cache requests to GitHub. Please disable Private Browsing
-          to see it work.
+          It looks like your browser is in private browsing mode. StroopWafel
+          uses IndexedDB to cache requests to GitHub. Please disable Private
+          Browsing to see it work.
         </span>
       )
     } else {

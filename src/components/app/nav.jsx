@@ -138,7 +138,7 @@ class AppNav extends React.Component {
             key="2"
             target="_blank"
             title="View Source Code on GitHub"
-            href="https://github.com/philschatz/gh-board"
+            href="https://github.com/mathieudutour/StroopWafel"
           >
             View Source Code on GitHub
           </BS.MenuItem>

@@ -41,7 +41,7 @@ export default [
           },
         ],
       },
-      // Catch for people blindly replacing "https://github.com/..." with "gh-board/#..."
+      // Catch for people blindly replacing "https://github.com/..." with "StroopWafel/#..."
       {
         path: '/:repoOwner/:repoName',
         onEnter: ({ params }, replace) =>

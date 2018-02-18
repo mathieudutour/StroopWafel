@@ -55,7 +55,7 @@ const issueSource = {
       )
     } else if (dropResult.title === 'No Milestone') {
       alert(
-        'BUG: gh-board is currently unable to remove a milestone. Help us out by submitting a Pull Request!'
+        'BUG: StroopWafel is currently unable to remove a milestone. Help us out by submitting a Pull Request!'
       )
     } else {
       throw new Error(

@@ -11,7 +11,7 @@ import {
 
 let storedSettings
 try {
-  storedSettings = JSON.parse(window.localStorage.getItem('gh-board-user'))
+  storedSettings = JSON.parse(window.localStorage.getItem('stroopwafel-user'))
 } catch (err) {
   storedSettings = undefined
 }

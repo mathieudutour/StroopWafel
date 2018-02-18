@@ -5,7 +5,7 @@ import Card from '../../ducks/utils/card'
 //
 // Declare Database
 //
-let db = new Dexie('gh-board')
+let db = new Dexie('stroopwafel')
 db.version(1).stores({
   issues: 'id,[repoOwner+repoName],state',
   repoLabels: '[repoOwner+repoName]',

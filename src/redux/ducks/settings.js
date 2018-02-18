@@ -17,7 +17,9 @@ export const VIEWING_MODE = {
 
 let storedSettings
 try {
-  storedSettings = JSON.parse(window.localStorage.getItem('gh-board-settings'))
+  storedSettings = JSON.parse(
+    window.localStorage.getItem('stroopwafel-settings')
+  )
 } catch (err) {
   storedSettings = undefined
 }

@@ -60,7 +60,7 @@ function _fetchLastSeenUpdatesForRepo(
       // If a repository has 0 events it probably has not changed in a while
       // or never had any commits. Do not keep trying to fetch all the Issues though
       // so set the lastSeenAt to be something non-zero
-      // since `null` means gh-board has not fetched all the Issues before.
+      // since `null` means stroopwafel has not fetched all the Issues before.
       const newLastSeenAt = items.length ? items[0].updatedAt : null
 
       let cards = items.reduce((prev, issue) => {

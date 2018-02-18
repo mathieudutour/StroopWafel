@@ -3,7 +3,7 @@ import Dexie from 'dexie'
 //
 // Declare Database
 //
-let db = new Dexie('gh-board-cache')
+let db = new Dexie('stroopwafel-cache')
 db.version(1).stores({
   etags: 'methodAndPath',
 })
@@ -31,7 +31,7 @@ export default class CacheHandler {
         })
         .catch(() => {
           alert(
-            'It looks like your browser is in private browsing mode. gh-board uses IndexedDB to cache requests to GitHub. Please disable Private Browsing to see it work.'
+            'It looks like your browser is in private browsing mode. StroopWafel uses IndexedDB to cache requests to GitHub. Please disable Private Browsing to see it work.'
           )
           // fall back to localStorage
           const cache = window.localStorage.getItem('octokat-cache')
