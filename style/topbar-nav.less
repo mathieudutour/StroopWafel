@@ -75,6 +75,12 @@
 
   // Override bootstrap breakpoints for the nav bar on smaller screens
   .container {
+    line-height: 25px;
+
+    .navbar-brand svg {
+      margin-top: -3px;
+    }
+
     .navbar-header {
       float: left;
       margin-right: 0;
@@ -112,6 +118,22 @@
       height: 50px;
       line-height: 50px;
       padding-left: 16px;
+    }
+
+    .panel-body {
+      border-top-width: 0;
+
+      .form-control,
+      .list-group-item {
+        border-radius: 0;
+        border-left-width: 0;
+        border-right-width: 0;
+      }
+
+      .form-control {
+        border-top-width: 0;
+        border-bottom-width: 0;
+      }
     }
   }
 }

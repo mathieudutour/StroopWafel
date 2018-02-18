@@ -3,13 +3,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import * as BS from 'react-bootstrap'
-import {
-  HomeIcon,
-  GearIcon,
-  QuestionIcon,
-  GraphIcon,
-  TagIcon,
-} from 'react-octicons'
+import { GearIcon, QuestionIcon, GraphIcon, TagIcon } from 'react-octicons'
 
 import {
   toggleShowSimpleList,
@@ -26,6 +20,7 @@ import LoginModal from '../login-modal'
 import LabelBadge from '../label-badge'
 import MoveModal from '../move-modal'
 import FilterDropdown from './filter-dropdown'
+import Logo from '../logo'
 
 class SettingsItem extends React.Component {
   render() {
@@ -88,7 +83,7 @@ class AppNav extends React.Component {
 
     const brand = (
       <Link to={'/'}>
-        <HomeIcon />
+        <Logo />
       </Link>
     )
     const filtering = tagNames.map(tagName => {

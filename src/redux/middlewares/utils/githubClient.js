@@ -99,8 +99,8 @@ export default class GithubClient extends EventEmitter {
   }
   reset() {
     return Promise.resolve().then(() => {
-      if (cachedClient) {
-        cachedClient._dumpCache()
+      if (cacheHandler) {
+        cacheHandler._dumpCache()
       }
       cachedClient = null
       this.fetchCredentialsFromStorage()

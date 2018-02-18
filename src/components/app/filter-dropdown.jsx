@@ -104,11 +104,7 @@ class FilterCategory extends React.Component {
 
 class FilterDropdown extends React.Component {
   state = {
-    activeKey: null,
-  }
-
-  handleSelect = activeKey => {
-    this.setState({ activeKey })
+    open: false,
   }
 
   renderTagNames = items => {
@@ -346,7 +342,7 @@ class FilterDropdown extends React.Component {
 
     const panel = (
       <BS.PanelGroup accordion id="filters-accordeon">
-        <BS.Panel className="filter-category" eventKey="1">
+        <BS.Panel className="filter-category">
           <BS.Panel.Heading>
             <BS.Panel.Title toggle>Labels</BS.Panel.Title>
           </BS.Panel.Heading>
@@ -354,7 +350,7 @@ class FilterDropdown extends React.Component {
             {this.renderTagNames(labels)}
           </BS.Panel.Body>
         </BS.Panel>
-        <BS.Panel className="filter-category" eventKey="2">
+        <BS.Panel className="filter-category">
           <BS.Panel.Heading>
             <BS.Panel.Title toggle>Milestones</BS.Panel.Title>
           </BS.Panel.Heading>
@@ -362,7 +358,7 @@ class FilterDropdown extends React.Component {
             {this.renderMilestones(milestones)}
           </BS.Panel.Body>
         </BS.Panel>
-        <BS.Panel className="filter-category" eventKey="3">
+        <BS.Panel className="filter-category">
           <BS.Panel.Heading>
             <BS.Panel.Title toggle>Columns</BS.Panel.Title>
           </BS.Panel.Heading>
@@ -370,13 +366,13 @@ class FilterDropdown extends React.Component {
             {this.renderColumnNames(labels)}
           </BS.Panel.Body>
         </BS.Panel>
-        <BS.Panel className="filter-category" eventKey="4">
+        <BS.Panel className="filter-category">
           <BS.Panel.Heading>
             <BS.Panel.Title toggle>States</BS.Panel.Title>
           </BS.Panel.Heading>
           <BS.Panel.Body collapsible>{this.renderStates()}</BS.Panel.Body>
         </BS.Panel>
-        <BS.Panel className="filter-category" eventKey="5">
+        <BS.Panel className="filter-category">
           <BS.Panel.Heading>
             <BS.Panel.Title toggle>Types</BS.Panel.Title>
           </BS.Panel.Heading>
@@ -430,6 +426,9 @@ class FilterDropdown extends React.Component {
             {selectedMilestoneItem} <SearchIcon />
           </span>
         }
+        open={this.state.open}
+        onToggle={this.onToggle}
+        onSelect={this.onSelect}
       >
         <div className="header">
           <span>Filters</span>
@@ -439,29 +438,17 @@ class FilterDropdown extends React.Component {
       </BS.NavDropdown>
     )
   }
-}
 
-// const FilterDropdownShell = React.createClass({
-//   render() {
-//     const {repoInfos} = this.props;
-//
-//     if (repoInfos.length) {
-//       const [{repoOwner, repoName}] = repoInfos;
-//
-//       // TODO: Poll all of these so we get updates
-//       // TODO: Include *all* labels, not just the ones in the primary repo
-//       const milestones = IssueStore.fetchMilestones(repoOwner, repoName);
-//       const labels = IssueStore.fetchLabels(repoOwner, repoName);
-//       const promise = Promise.all([milestones, labels]);
-//       return (
-//         <Loadable promise={promise} renderLoaded={([milestones, labels]) => <FilterDropdown milestones={milestones} labels={labels}/>} />
-//       );
-//     } else {
-//       return null;
-//     }
-//
-//   }
-// });
+  onToggle = (open, event) => {
+    if (open || !event.isDefaultPrevented) {
+      this.setState({
+        open,
+      })
+    }
+  }
+
+  onSelect = (eventKey, event) => event.preventDefault()
+}
 
 export default connect(state => {
   return {
