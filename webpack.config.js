@@ -18,7 +18,7 @@ const config = {
     new webpack.DefinePlugin({
       'process.env': { NODE_ENV: process.env['NODE_ENV'] },
     }),
-  ].concat(isBuild ? [new webpack.NoErrorsPlugin()] : []),
+  ].concat(isBuild ? [new webpack.NoEmitOnErrorsPlugin()] : []),
   module: {
     loaders: [
       {
