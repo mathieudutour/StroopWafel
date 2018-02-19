@@ -131,7 +131,7 @@ function _fetchUpdatesForRepo(githubClient, repo) {
         // Re-fetch each Issue
         return Promise.all(
           cards.map(card =>
-            card.fetchIssue(githubClient, true /*skipSavingToDb*/)
+            card.fetchIssue(githubClient, { skipSavingToDb: true })
           )
         )
       })
@@ -163,13 +163,6 @@ function _fetchUpdatesForRepo(githubClient, repo) {
 }
 
 export default function fetchIssues(githubClient, filter, repoInfos, dispatch) {
-  const explicitlyListedRepos = {}
-  repoInfos.forEach(({ repoOwner, repoName }) => {
-    if (repoName !== '*') {
-      explicitlyListedRepos[`${repoOwner}/${repoName}`] = true
-    }
-  })
-
   let fetched = false
 
   Database.fetchCards(filter, repoInfos)
@@ -185,77 +178,12 @@ export default function fetchIssues(githubClient, filter, repoInfos, dispatch) {
     .then(client => {
       return Promise.all(
         repoInfos.map(({ repoOwner, repoName }) => {
-          if (repoName === '*') {
-            // Fetch all the repos, and then concat them
-            // progress.addTicks(1, `Fetching list of all repositories for ${repoOwner}`);
-
-            let fetchAllRepos
-            if (githubClient.canCacheLots()) {
-              // First, we have to determine if the repoOwner is an Organization or a User
-              // so we can call .orgs or .users to get the list of repositories
-              // .orgs returns Private+Public repos but .users only returns private repos
-              fetchAllRepos = client
-                .users(repoOwner)
-                .fetch()
-                .then(({ type }) => {
-                  if ('Organization' === type) {
-                    return client.orgs(repoOwner).repos.fetchAll()
-                  } else {
-                    return client.users(repoOwner).repos.fetchAll()
-                  }
-                })
-            } else {
-              // only get the 1st page of results if not logged in
-              // since it's anonymous we only need to get public repos (.users only yields public repos)
-              fetchAllRepos = client.users(repoOwner).repos.fetchOne()
-            }
-            return fetchAllRepos
-              .then(repos => {
-                // progress.tick(`Fetched list of all repositories for ${repoOwner}`);
-                // Filter repos to only include ones that have been pushed in the last year
-                // to avoid excessive polling
-                repos = repos.filter(repo => {
-                  const ret =
-                    Date.now() - Date.parse(repo.updatedAt) <
-                    1000 * 60 * 60 * 24 * 365
-                  // if (!ret) {
-                  //   console.log('Skipping over ', repo.name, 'because lastUpdated=', repo.updatedAt);
-                  // }
-                  return ret
-                })
-                // If anonymous mode is on then only poll 5 repositories
-                if (!githubClient.canCacheLots()) {
-                  if (repos.length > 5) {
-                    repos = repos.slice(0, 5)
-                  }
-                }
-                return Promise.all(
-                  repos.map(repo => {
-                    // Exclude repos that are explicitly listed (usually only the primary repo is listed so we know where to pull milestones/labesl from)
-                    if (explicitlyListedRepos[`${repoOwner}/${repo.name}`]) {
-                      return null
-                    }
-                    return _fetchUpdatesForRepo(githubClient, repo)
-                  })
-                )
-              })
-              .then(issuesByRepo => {
-                // exclude the null repos (ones that were explicitly listed in the URL)
-                return Object.keys(issuesByRepo).reduce((prev, v) => {
-                  if (!v) {
-                    return prev
-                  }
-                  return prev.concat(v)
-                }, [])
-              })
-          } else {
-            return client
-              .repos(repoOwner, repoName)
-              .fetch()
-              .then(repo => {
-                return _fetchUpdatesForRepo(githubClient, repo)
-              })
-          }
+          return client
+            .repos(repoOwner, repoName)
+            .fetch()
+            .then(repo => {
+              return _fetchUpdatesForRepo(githubClient, repo)
+            })
         })
       )
     })

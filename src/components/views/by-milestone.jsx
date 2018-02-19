@@ -14,12 +14,13 @@ import GithubFlavoredMarkdown from '../gfm'
 
 class KanbanColumn extends React.Component {
   render() {
-    const { milestone, cards, primaryRepoName, filters } = this.props
+    const { milestone, cards, primaryRepoName, filters, settings } = this.props
 
     const issueComponents = cards.map(card => {
       return (
         <Issue
           key={card.key()}
+          settings={settings}
           filters={filters}
           primaryRepoName={primaryRepoName}
           card={card}
@@ -79,7 +80,7 @@ class ByMilestoneView extends React.Component {
 
     let allMilestones = milestones
 
-    if (!settings.isHideUncategorized) {
+    if (!settings.hideUncategorized) {
       allMilestones = [null].concat(allMilestones)
     }
 
@@ -102,7 +103,7 @@ class ByMilestoneView extends React.Component {
 
       if (
         !isFilteringByColumn &&
-        !settings.isShowEmptyColumns &&
+        !settings.showEmptyColumns &&
         !columnCards.length
       ) {
         return null

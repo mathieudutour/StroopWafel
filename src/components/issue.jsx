@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import * as BS from 'react-bootstrap'
-import { connect } from 'react-redux'
 import { DragSource } from 'react-dnd'
 import classnames from 'classnames'
 import { Link } from 'react-router'
@@ -19,7 +18,6 @@ import { tryToMoveIssue } from '../redux/ducks/issue'
 import { PULL_REQUEST_ISSUE_RELATION } from '../gfm-dom'
 import { KANBAN_LABEL } from '../helpers'
 
-import Loadable from './loadable'
 import GithubFlavoredMarkdown from './gfm'
 import Time, { Timer } from './time'
 import LabelBadge from './label-badge'
@@ -110,8 +108,8 @@ class IssueSimple extends React.Component {
       )
     }
 
-    // stop highlighting after 5min
-    const isUpdated = Date.now() - Date.parse(updatedAt) < 2 * 60 * 1000
+    // stop highlighting after 5s
+    const isUpdated = Date.now() - Date.parse(updatedAt) < 5 * 1000
 
     let dueAt
     if (issueDueAt) {
@@ -362,18 +360,18 @@ class IssueCard extends React.Component {
       )
     }
 
-    // stop highlighting after 5min
-    const isUpdated = Date.now() - Date.parse(updatedAt) < 2 * 60 * 1000
+    // stop highlighting after 5s
+    const isUpdated = Date.now() - Date.parse(updatedAt) < 5 * 1000
     const classes = {
       issue: true,
       'is-dragging': isDragging,
       'is-updated': isUpdated,
       'is-pull-request': card.isPullRequest(),
       'is-merged': card.isPullRequestMerged(),
-      'is-merge-conflict': card.isPullRequest() && card.hasMergeConflict(),
       'is-pull-request-to-different-branch':
         card.isPullRequest() && !card.isPullRequestToDefaultBranch(),
     }
+
     let mergeConflictBlurb
     if (card.isPullRequest() && card.hasMergeConflict()) {
       mergeConflictBlurb = (
@@ -384,13 +382,9 @@ class IssueCard extends React.Component {
         />
       )
     }
+
     let statusBlurb
     if (card.isPullRequest()) {
-      const statusClasses = {
-        'issue-status': true,
-        'pull-right': true,
-        'is-merge-conflict': card.hasMergeConflict(),
-      }
       const status = card.getPullRequestStatus()
       let statusIcon
       let statusText
@@ -398,44 +392,41 @@ class IssueCard extends React.Component {
       switch (status.state) {
         case 'success':
           statusIcon = <CheckIcon className="status-icon" />
+          statusText = 'Your tests passed!'
           break
         case 'pending':
           statusIcon = <PrimitiveDotIcon className="status-icon" />
-          statusText = 'Testing...'
+          statusText = 'Your tests are running...'
           break
         case 'error':
         case 'failure':
           statusIcon = <XIcon className="status-icon" />
-          statusText = 'Tests Failed'
+          statusText = 'Your tests failed!'
           break
         default:
       }
-      if (statusIcon || statusText) {
-        if (status.targetUrl) {
-          statusBlurb = (
-            <a
-              key="status"
-              target="_blank"
-              className={classnames(statusClasses)}
-              data-status-state={status.state}
-              href={status.targetUrl}
-              title={status.description}
-            >
-              {statusIcon} {statusText}
-            </a>
-          )
-        } else {
-          statusBlurb = (
-            <span
-              key="status"
-              className={classnames(statusClasses)}
-              data-status-state={status.state}
-              title={status.description}
-            >
-              {statusIcon} {statusText}
-            </span>
-          )
+      if (statusIcon) {
+        const statusClasses = {
+          'issue-status': true,
+          'is-merge-conflict': card.hasMergeConflict(),
         }
+        statusBlurb = (
+          <BS.OverlayTrigger
+            rootClose
+            trigger={['hover', 'focus']}
+            placement="bottom"
+            overlay={
+              <BS.Tooltip id={`tooltip-${card.key()}-status`}>
+                <statusIcon /> {status.description || statusText}
+              </BS.Tooltip>
+            }
+          >
+            <div
+              className={classnames(statusClasses)}
+              data-status-state={status.state}
+            />
+          </BS.OverlayTrigger>
+        )
       }
     }
 
@@ -467,7 +458,6 @@ class IssueCard extends React.Component {
         primaryRepoName={primaryRepoName}
         primaryRepoOwner={repoOwner}
       />,
-      statusBlurb,
     ]
       .concat(assignedAvatars)
       .concat([mergeConflictBlurb])
@@ -483,13 +473,13 @@ class IssueCard extends React.Component {
       <BS.Panel className="issue-card" onClick={this.showDetails}>
         <BS.Panel.Body
           data-status-state={
-            card.isPullRequest() ? card.getPullRequestStatus() : null
+            card.isPullRequest() ? card.getPullRequestStatus().state : null
           }
           onDragStart={this.onDragStart}
           className={classnames(classes)}
           data-state={issue.state}
         >
-          {header}
+          <div className="card-meta">{header}</div>
           <span className="issue-title">
             <GithubFlavoredMarkdown
               inline
@@ -510,6 +500,7 @@ class IssueCard extends React.Component {
             </span>
             <BS.Clearfix />
           </div>
+          {statusBlurb}
         </BS.Panel.Body>
         {relatedCards.length > 0 && (
           <BS.Panel.Footer className="related-issues">
@@ -560,9 +551,19 @@ class IssueCard extends React.Component {
 // we have to have both to fully render an Issue.
 class Issue extends React.Component {
   componentWillMount() {
-    const { card } = this.props
-    if (!card.isLoaded()) {
-      card.load()
+    const { card, settings } = this.props
+    if (
+      !card.isLoaded({
+        shouldShowPullRequestData: settings.showPullRequestData,
+      })
+    ) {
+      card
+        .load(window.githubClient, {
+          shouldShowPullRequestData: settings.showPullRequestData,
+        })
+        .then(() => {
+          this.forceUpdate()
+        })
     }
     Timer.onTick(this.pollPullRequestStatus)
   }
@@ -571,14 +572,14 @@ class Issue extends React.Component {
     Timer.offTick(this.pollPullRequestStatus)
   }
 
-  update = issue => {
-    this.setState({ issue })
-  }
-
   pollPullRequestStatus = () => {
-    const { card } = this.props
+    const { card, settings } = this.props
     if (card.isPullRequest()) {
-      card.fetchPRStatus(true /*force*/)
+      card
+        .fetchPRStatus(window.githubClient, {
+          shouldShowPullRequestData: settings.showPullRequestData,
+        })
+        .then(() => this.forceUpdate())
     }
   }
 
@@ -601,7 +602,7 @@ class Issue extends React.Component {
     let node
     if (!issue) {
       return <span>Maybe moving Issue...</span>
-    } else if (settings.isShowSimpleList) {
+    } else if (settings.showSimpleList) {
       node = (
         <IssueSimple card={card} isDragging={isDragging} filters={filters} />
       )
@@ -619,34 +620,5 @@ class Issue extends React.Component {
   }
 }
 
-const ConnectedIssue = connect(state => {
-  return {
-    settings: state.settings,
-  }
-})(DragSource(ItemTypes.CARD, issueSource, collect)(Issue))
-
-// Wrap the issue possibly in a Loadable so we can determine if the Pull Request
-// has merge conflicts.
-// `GET .../issues` returns an object with `labels` and
-// `GET .../pulls` returns an object with `mergeable` so for Pull Requests
-// we have to get both.
-class IssueShell extends React.Component {
-  render() {
-    const { card } = this.props
-    if (card.isLoaded()) {
-      return <ConnectedIssue {...this.props} />
-    } else {
-      return (
-        <Loadable
-          key={card.key()}
-          promise={card.load()}
-          loadingText={card.key()}
-          renderLoaded={() => <ConnectedIssue {...this.props} />}
-        />
-      )
-    }
-  }
-}
-
 // Export the wrapped version
-export default IssueShell
+export default DragSource(ItemTypes.CARD, issueSource, collect)(Issue)

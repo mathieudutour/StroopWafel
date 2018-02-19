@@ -2,16 +2,8 @@ import { EventEmitter } from 'events'
 import React from 'react'
 import Moment from 'moment'
 
-const RELOAD_TIME_SHORT = 30 * 1000
+const RELOAD_TIME_SHORT = 20 * 1000
 const RELOAD_TIME_LONG = 5 * 60 * 1000
-
-function getReloadTime() {
-  if (document.hidden) {
-    return RELOAD_TIME_LONG
-  } else {
-    return RELOAD_TIME_SHORT
-  }
-}
 
 export const Timer = new class Store extends EventEmitter {
   off() {
@@ -31,23 +23,18 @@ export const Timer = new class Store extends EventEmitter {
 // since there can be hundreds of issues, increase the max limit
 Timer.setMaxListeners(0)
 
-// `tick` every `UPDATE_INTERVAL`
-let timerTimeout = null
-const timerFn = () => {
-  Timer.emit('tick')
+let timerTimeout = setInterval(() => Timer.emit('tick'), RELOAD_TIME_SHORT)
 
-  // const d = new Date();
-  // console.log('tick', d.getMinutes(), d.getSeconds());
-  timerTimeout = setTimeout(timerFn, getReloadTime())
-}
-timerFn()
-
-const handleVisibilityChange = () => {
-  if (!document.hidden) {
-    clearTimeout(timerTimeout)
-    timerFn()
+function handleVisibilityChange() {
+  clearInterval(timerTimeout)
+  if (document.hidden) {
+    timerTimeout = setInterval(() => Timer.emit('tick'), RELOAD_TIME_LONG)
+  } else {
+    Timer.emit('tick')
+    timerTimeout = setInterval(() => Timer.emit('tick'), RELOAD_TIME_SHORT)
   }
 }
+
 document.addEventListener('visibilitychange', handleVisibilityChange, false)
 
 export default class extends React.Component {

@@ -13,6 +13,7 @@ import {
 import IssueList from '../issue-list'
 import Issue from '../issue'
 import AnonymousModal from '../anonymous-modal'
+import { Timer } from '../time'
 
 let showedWarning = false
 
@@ -24,12 +25,13 @@ const filterKanbanLabels = labels => {
 
 class KanbanColumn extends React.Component {
   render() {
-    const { label, cards, primaryRepo, filters } = this.props
+    const { label, cards, primaryRepo, filters, settings } = this.props
 
     const issueComponents = cards.map(card => {
       return (
         <Issue
           key={card.issue.id}
+          settings={settings}
           filters={filters}
           primaryRepoName={primaryRepo.repoName}
           card={card}
@@ -69,7 +71,14 @@ class KanbanColumn extends React.Component {
 
 class KanbanRepo extends React.Component {
   componentWillMount() {
-    this.fetchStuff(this.props)
+    const { repoInfos, dispatch } = this.props
+    this.fetchAction = this.fetchStuff.bind(this, repoInfos, dispatch)
+    this.fetchAction()
+    Timer.onTick(this.fetchAction)
+  }
+
+  componentWillUnmount() {
+    Timer.offTick(this.fetchAction)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -77,12 +86,18 @@ class KanbanRepo extends React.Component {
       !isDeepEqual(nextProps.repoInfos, this.props.repoInfos) ||
       !isDeepEqual(nextProps.filter, this.props.filter)
     ) {
-      this.fetchStuff(nextProps)
+      Timer.offTick(this.fetchAction)
+      this.fetchAction = this.fetchStuff.bind(
+        this,
+        nextProps.repoInfos,
+        nextProps.dispatch
+      )
+      this.fetchAction()
+      Timer.onTick(this.fetchAction)
     }
   }
 
-  fetchStuff(props) {
-    const { repoInfos, dispatch } = props
+  fetchStuff(repoInfos, dispatch) {
     // Get the "Primary" repo for milestones and labels
     const [{ repoOwner, repoName }] = repoInfos
     dispatch(fetchLabels(repoOwner, repoName))
@@ -105,14 +120,14 @@ class KanbanRepo extends React.Component {
 
     let kanbanLabels = filterKanbanLabels(labels)
 
-    if (!settings.isHideUncategorized) {
+    if (!settings.hideUncategorized) {
       kanbanLabels = [null].concat(kanbanLabels)
     }
 
     if (
       !!showedWarning &&
       !fetchingIssues &&
-      kanbanLabels.length === (settings.isHideUncategorized ? 0 : 1)
+      kanbanLabels.length === (settings.hideUncategorized ? 0 : 1)
     ) {
       showedWarning = true
       alert(
@@ -139,7 +154,7 @@ class KanbanRepo extends React.Component {
 
       if (
         !isFilteringByColumn &&
-        !settings.isShowEmptyColumns &&
+        !settings.showEmptyColumns &&
         !columnCards.length
       ) {
         return null

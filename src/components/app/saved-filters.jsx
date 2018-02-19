@@ -1,6 +1,6 @@
 import React from 'react'
 import * as BS from 'react-bootstrap'
-import { CloudUploadIcon } from 'react-octicons'
+import { CloudUploadIcon, CloudDownloadIcon } from 'react-octicons'
 
 const LOCALSTORAGE_KEY = 'saved-filters'
 
@@ -56,24 +56,31 @@ class SavedFiltersButton extends React.Component {
       window.localStorage['saved-filters'] || '[]'
     )
 
-    const filters = savedFilterData.map(({ title, hashStr }) => {
-      return (
-        <BS.MenuItem key={hashStr} href={hashStr}>
-          {title}
-        </BS.MenuItem>
-      )
-    })
-    const addFilter = (
-      <CloudUploadIcon title="Save Filter" onClick={this.showAddFilter} />
-    )
     return (
-      <div className="saved-filters">
-        <BS.SplitButton id="saved-filters" title={addFilter}>
-          <BS.MenuItem header>Apply Saved Filter</BS.MenuItem>
-          {filters}
-        </BS.SplitButton>
+      <BS.ButtonGroup className="saved-filters">
+        <BS.Button onClick={this.showAddFilter} title="Save Filter">
+          <CloudUploadIcon />
+        </BS.Button>
+        <BS.Dropdown>
+          <BS.Dropdown.Toggle>
+            <CloudDownloadIcon />
+          </BS.Dropdown.Toggle>
+          <BS.Dropdown.Menu>
+            <BS.MenuItem header>Apply Saved Filter</BS.MenuItem>
+            {savedFilterData.length <= 0 && (
+              <BS.MenuItem>No filter saved yet</BS.MenuItem>
+            )}
+            {savedFilterData.map(({ title, hashStr }) => {
+              return (
+                <BS.MenuItem key={hashStr} href={hashStr}>
+                  {title}
+                </BS.MenuItem>
+              )
+            })}
+          </BS.Dropdown.Menu>
+        </BS.Dropdown>
         <AddFilterModal show={showModal} onHide={this.hideAddFilter} />
-      </div>
+      </BS.ButtonGroup>
     )
   }
 }

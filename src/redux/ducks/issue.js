@@ -65,6 +65,9 @@ export const fetchLabels = duck.defineAction(FETCH_LABELS, {
     }
   },
   resolve(state, { payload: labels }) {
+    labels.forEach(l => {
+      state.LABEL_CACHE[l.name] = l // mutating the state, that's bad
+    })
     return {
       ...state,
       labels,
@@ -208,6 +211,9 @@ export const _gotIssuesFromDB = duck.defineAction(GOT_ISSUES_FROM_DB, {
     return {
       ...state,
       cards: sortCards(boundCards),
+      labels: state.labels.length // if we haven't any labels yet, just take the ones in the cache
+        ? state.labels
+        : Object.keys(state.LABEL_CACHE).map(k => state.LABEL_CACHE[k]),
     }
   },
 })

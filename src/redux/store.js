@@ -53,11 +53,3 @@ export const store = createStoreWithMiddleware(reducer)
 
 // Sync dispatched route actions to the history
 export const history = syncHistoryWithStore(hashHistory, store)
-
-// history.listen(() => {
-//   if (window.ga) {
-//     const { pathname, hash } = window.location
-//     window.ga('set', 'page', pathname + hash)
-//     window.ga('send', 'pageview')
-//   }
-// })

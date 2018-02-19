@@ -10,12 +10,13 @@ import Issue from '../issue'
 
 class KanbanColumn extends React.Component {
   render() {
-    const { user, cards, primaryRepoName, filters } = this.props
+    const { user, cards, primaryRepoName, filters, settings } = this.props
 
     const issueComponents = cards.map(card => {
       return (
         <Issue
           key={card.key()}
+          settings={settings}
           filters={filters}
           primaryRepoName={primaryRepoName}
           card={card}
@@ -71,7 +72,7 @@ class UsersView extends React.Component {
       .sort()
       .map(k => logins[k])
 
-    if (!settings.isHideUncategorized) {
+    if (!settings.hideUncategorized) {
       users = [null].concat(users)
     }
 
@@ -89,7 +90,7 @@ class UsersView extends React.Component {
 
       if (
         !isFilteringByColumn &&
-        !settings.isShowEmptyColumns &&
+        !settings.showEmptyColumns &&
         !columnCards.length
       ) {
         return null
@@ -99,6 +100,7 @@ class UsersView extends React.Component {
         <KanbanColumn
           key={user ? user.login : 'uncategorized'}
           filters={filters}
+          settings={settings}
           user={user}
           cards={columnCards}
           primaryRepoName={repoName}

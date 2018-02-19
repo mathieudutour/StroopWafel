@@ -75,7 +75,7 @@ export default class Card {
       if (this.pr.merged) {
         return false
       }
-      return !this.pr.mergeable
+      return this.pr.mergeable === false
     } else {
       return false // return false for now just to be safe
     }
@@ -88,7 +88,7 @@ export default class Card {
     const { state, statuses } = this.prStatus
     // Pull out the 1st status which matches the overall status of the commit.
     // That way we get the targetURL and message.
-    // When 'pending', there might not be entries in statuses
+    // When 'pending', there might not be entries in statuses which there is is no actual status
     const theStatus = statuses.find(status => {
       return status.state === state
     })
@@ -160,17 +160,17 @@ export default class Card {
     }
     return count
   }
-  fetchPR(githubClient, shouldShowPullRequestData, isForced) {
+  fetchPR(githubClient, options = {}) {
     if (!this.isPullRequest()) {
       throw new Error('BUG! Should not be fetching PR for an Issue')
     }
-    if (!shouldShowPullRequestData) {
+    if (!options.shouldShowPullRequestData) {
       return Promise.resolve('user selected not to show additional PR data')
     }
     if (githubClient.getRateLimitRemaining() < githubClient.LOW_RATE_LIMIT) {
       return Promise.resolve('Rate limit low')
     }
-    if (!this._prPromise || isForced) {
+    if (!this._prPromise || options.isForced) {
       const oldHead = this.pr && this.pr.head.sha
       return (this._prPromise = githubClient
         .getOcto()
@@ -190,61 +190,59 @@ export default class Card {
           const isSame =
             this.pr && pr && JSON.stringify(this.pr) === JSON.stringify(pr)
           this.pr = pr
-          if (!isSame) {
+          if (!isSame && !options.skipSavingToDb) {
             Database.putCard(this)
           }
         }))
     }
     return this._prPromise
   }
-  fetchPRStatus(githubClient, shouldShowPullRequestData, isForced) {
-    if (!shouldShowPullRequestData) {
+  fetchPRStatus(githubClient, options = {}) {
+    if (!options.shouldShowPullRequestData) {
       return Promise.resolve('user selected not to show additional PR data')
     }
     if (githubClient.getRateLimitRemaining() < githubClient.LOW_RATE_LIMIT) {
       return Promise.resolve('Rate limit low')
     }
-    return this.fetchPR(githubClient, shouldShowPullRequestData, isForced).then(
-      () => {
-        if (!this._prStatusPromise || isForced) {
-          // Stop fetching the status once it is success. Some failed tests might get re-run.
-          if (!this.prStatus || this.prStatus.state !== 'success') {
-            this._prStatusPromise = githubClient
-              .getOcto()
-              .then(({ repos }) =>
-                repos(this.repoOwner, this.repoName)
-                  .commits(this.pr.head.sha)
-                  .status.fetch()
-              )
-              .then(status => {
-                const isSame =
-                  this.prStatus &&
-                  status &&
-                  JSON.stringify(this.prStatus) === JSON.stringify(status)
-                this.prStatus = status
-                if (!isSame) {
-                  Database.putCard(this)
-                }
-              })
-          }
+    return this.fetchPR(githubClient, options).then(() => {
+      if (!this._prStatusPromise || options.isForced) {
+        // Stop fetching the status once it is success. Some failed tests might get re-run.
+        if (!this.prStatus || this.prStatus.state !== 'success') {
+          this._prStatusPromise = githubClient
+            .getOcto()
+            .then(({ repos }) =>
+              repos(this.repoOwner, this.repoName)
+                .commits(this.pr.head.sha)
+                .status.fetch()
+            )
+            .then(status => {
+              const isSame =
+                this.prStatus &&
+                status &&
+                JSON.stringify(this.prStatus) === JSON.stringify(status)
+              this.prStatus = status
+              if (!isSame && !options.skipSavingToDb) {
+                Database.putCard(this)
+              }
+            })
         }
       }
-    )
+    })
   }
-  fetchIssue(githubClient, skipSavingToDb) {
+  fetchIssue(githubClient, options = {}) {
     return githubClient
       .getOcto()
       .then(({ issues }) => issues(this.number).fetch())
       .then(issue => {
         this.issue = issue
-        if (!skipSavingToDb) {
+        if (!options.skipSavingToDb) {
           Database.putCard(this)
         }
         return issue
       })
       .then(issue => {
         if (this.isPullRequest()) {
-          return this.fetchPRStatus().then(() => issue)
+          return this.fetchPRStatus(githubClient, options).then(() => issue)
         }
         return issue
       })
@@ -268,33 +266,28 @@ export default class Card {
         'PRStatus resolved because it was loaded from DB'
       )
     }
-    // if (prStatus) {
-    //   this.fetchPRStatus(); // Trigger fetching PR and status
-    // } else if (pr) {
-    //   this.fetchPR(); // Trigger fetching PR
-    // }
   }
-  isLoaded(shouldShowPullRequestData) {
+  isLoaded(options = {}) {
     if (!this.issue) {
       return false
     }
-    if (shouldShowPullRequestData && this.isPullRequest()) {
+    if (options.shouldShowPullRequestData && this.isPullRequest()) {
       // Check if the statuses are loaded
       return !!this.prStatus
     }
     return true // It is an issue and is loaded
   }
-  load() {
+  load(githubClient, options) {
     if (this.issue) {
       if (this.isPullRequest()) {
-        return this.fetchPRStatus()
+        return this.fetchPRStatus(githubClient, options)
       } else {
         return Promise.resolve(
           'There is already an issue. no need to fetch again'
         )
       }
     } else {
-      return this.fetchIssue()
+      return this.fetchIssue(githubClient, options)
     }
   }
 }

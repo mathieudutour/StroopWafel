@@ -103,7 +103,7 @@ export const fetchUser = duck.defineAction(FETCH_USER, {
     }
   },
   reject(state) {
-    // TODO handle 403 and clear info and user
+    // TODO: handle 403 and clear info and user
     return {
       ...state,
       ready: true,

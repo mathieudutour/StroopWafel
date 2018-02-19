@@ -3,10 +3,7 @@ import { UNCATEGORIZED_NAME, KANBAN_LABEL } from '../../../helpers'
 
 function matchesRepoInfo(repoInfos, card) {
   return repoInfos.some(({ repoOwner, repoName }) => {
-    return (
-      repoOwner === card.repoOwner &&
-      (repoName === card.repoName || repoName === '*')
-    )
+    return repoOwner === card.repoOwner && repoName === card.repoName
   })
 }
 

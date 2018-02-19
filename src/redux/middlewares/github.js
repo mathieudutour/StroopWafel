@@ -6,6 +6,7 @@ import fetchMilestones from './utils/fetchMilestones'
 import moveIssues from './utils/moveIssues'
 
 const githubClient = new GithubClient()
+window.githubClient = githubClient
 
 export default ({ getState, dispatch }) => next => action => {
   if (!action || !action.meta || !action.meta.github) {

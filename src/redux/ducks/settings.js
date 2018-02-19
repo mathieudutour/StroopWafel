@@ -1,4 +1,5 @@
 import Duck from 'reduck'
+import { resolve } from 'redux-optimist-promise'
 
 import {
   RESET_SETTINGS,
@@ -7,6 +8,7 @@ import {
   TOGGLE_SHOW_EMPTY_COLUMNS,
   SET_VIEWING_MODE,
   TOGGLE_SHOW_PR_DATA,
+  LOGIN,
 } from '../actions'
 
 export const VIEWING_MODE = {
@@ -25,11 +27,11 @@ try {
 }
 
 const DEFAULT_STATE = {
-  isShowSimpleList: false,
-  isHideUncategorized: false,
-  isShowEmptyColumns: true,
+  showSimpleList: false,
+  hideUncategorized: false,
+  showEmptyColumns: true,
   viewingMode: VIEWING_MODE.DEV, // The "I want to focus on Issues" or "PullRequests" tri-state
-  isShowPullRequestData: false, // By default (anon users) this is unchecked. Gets checked when user logs in
+  showPullRequestData: false, // By default (anon users) this is unchecked. Gets checked when user logs in
 }
 
 const initialState = storedSettings || DEFAULT_STATE
@@ -52,7 +54,7 @@ export const toggleShowSimpleList = duck.defineAction(TOGGLE_SHOW_SIMPLE_LIST, {
   reducer(state) {
     return {
       ...state,
-      isShowSimpleList: !state.isShowSimpleList,
+      showSimpleList: !state.showSimpleList,
     }
   },
 })
@@ -66,7 +68,7 @@ export const toggleHideUncategorized = duck.defineAction(
     reducer(state) {
       return {
         ...state,
-        isHideUncategorized: !state.isHideUncategorized,
+        hideUncategorized: !state.hideUncategorized,
       }
     },
   }
@@ -81,7 +83,7 @@ export const toggleShowEmptyColumns = duck.defineAction(
     reducer(state) {
       return {
         ...state,
-        isShowEmptyColumns: !state.isShowEmptyColumns,
+        showEmptyColumns: !state.showEmptyColumns,
       }
     },
   }
@@ -108,10 +110,17 @@ export const toggleShowPullRequestData = duck.defineAction(
     reducer(state) {
       return {
         ...state,
-        isShowPullRequestData: !state.isShowPullRequestData,
+        showPullRequestData: !state.showPullRequestData,
       }
     },
   }
 )
+
+duck.addReducerCase(resolve(LOGIN), state => {
+  return {
+    ...state,
+    showPullRequestData: true,
+  }
+})
 
 export default duck.reducer

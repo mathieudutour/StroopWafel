@@ -3,7 +3,14 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import * as BS from 'react-bootstrap'
-import { GearIcon, QuestionIcon, GraphIcon } from 'react-octicons'
+import {
+  EyeIcon,
+  MilestoneIcon,
+  PersonIcon,
+  ProjectIcon,
+  QuestionIcon,
+  GraphIcon,
+} from 'react-octicons'
 
 import {
   toggleShowSimpleList,
@@ -116,6 +123,14 @@ class AppNav extends React.Component {
 
     let loginButton
     if (userInfo) {
+      const settingsMenuHelp = () => {
+        /*eslint-disable no-alert */
+        alert(
+          'When an Issue and Pull Request are linked (by writing "fixes #123" in the Pull Request description) the related Issue/Pull request is removed from the list.\n Developers will probably want to see the Pull Request in their board (since they created it) while QA would probably rather see the Issue (since they created it).'
+        )
+        /*eslint-enable no-alert */
+      }
+
       const avatarImage = (
         <img
           alt={'@' + userInfo.login}
@@ -129,33 +144,90 @@ class AppNav extends React.Component {
           id="signin-dropdown"
           title={avatarImage}
         >
-          <BS.MenuItem key="1" header>
+          <BS.MenuItem header>
             Signed in as <strong>{userInfo.login}</strong>
           </BS.MenuItem>
           <BS.MenuItem
-            key="2"
             target="_blank"
             href="https://github.com/settings/tokens"
           >
             Review GitHub Access
           </BS.MenuItem>
-          <BS.MenuItem key="3" divider />
+          <BS.MenuItem divider />
+          <BS.MenuItem header>Display Settings</BS.MenuItem>
+          <SettingsItem
+            onSelect={() => this.props.dispatch(toggleShowSimpleList())}
+            isChecked={settings.showSimpleList}
+          >
+            Show Simple List
+          </SettingsItem>
+          <SettingsItem
+            onSelect={() => this.props.dispatch(toggleHideUncategorized())}
+            isChecked={!settings.hideUncategorized}
+          >
+            Show Uncategorized
+          </SettingsItem>
+          <SettingsItem
+            onSelect={() => this.props.dispatch(toggleShowEmptyColumns())}
+            isChecked={settings.showEmptyColumns}
+          >
+            Show Empty Columns
+          </SettingsItem>
+          <SettingsItem
+            onSelect={() => this.props.dispatch(toggleShowPullRequestData())}
+            isChecked={settings.showPullRequestData}
+          >
+            Show More Pull Request Info
+          </SettingsItem>
+          <BS.MenuItem divider />
+          <BS.MenuItem header>
+            Viewing Mode{' '}
+            <span className="question-label" onClick={settingsMenuHelp}>
+              <QuestionIcon />
+            </span>
+          </BS.MenuItem>
+          <SettingsItem
+            onSelect={() =>
+              this.props.dispatch(setViewingMode(VIEWING_MODE.DEV))
+            }
+            isChecked={settings.viewingMode === VIEWING_MODE.DEV}
+          >
+            Developer-Friendly
+          </SettingsItem>
+          <SettingsItem
+            onSelect={() =>
+              this.props.dispatch(setViewingMode(VIEWING_MODE.QA))
+            }
+            isChecked={settings.viewingMode === VIEWING_MODE.QA}
+          >
+            QA-Friendly
+          </SettingsItem>
+          <SettingsItem
+            onSelect={() =>
+              this.props.dispatch(setViewingMode(VIEWING_MODE.COMBINED))
+            }
+            isChecked={settings.viewingMode === VIEWING_MODE.COMBINED}
+          >
+            Combined
+          </SettingsItem>
+          <BS.MenuItem divider />
           <BS.MenuItem
-            key="4"
             target="_blank"
             href="https://github.com/mathieudutour/StroopWafel/issues/new"
           >
             Report a Bug
           </BS.MenuItem>
           <BS.MenuItem
-            key="5"
             target="_blank"
             href="https://github.com/mathieudutour/StroopWafel"
           >
             View Source Code
           </BS.MenuItem>
-          <BS.MenuItem key="6" divider />
-          <BS.MenuItem key="7" eventKey="1">
+          <BS.MenuItem divider />
+          <BS.MenuItem onClick={this.promptAndResetDatabases}>
+            Reset Local Cache...
+          </BS.MenuItem>
+          <BS.MenuItem>
             <span onClick={() => this.props.dispatch(logout())}>Sign Out</span>
           </BS.MenuItem>
         </BS.NavDropdown>
@@ -170,8 +242,6 @@ class AppNav extends React.Component {
         </BS.NavItem>
       )
     }
-
-    const settingsTitle = <GearIcon />
 
     let repoDetails = null
     if (!filtering.length && repoInfos.length) {
@@ -211,25 +281,6 @@ class AppNav extends React.Component {
         </li>
       )
     }
-    const settingsMenuHelp = () => {
-      /*eslint-disable no-alert */
-      alert(
-        'When an Issue and Pull Request are linked (by writing "fixes #123" in the Pull Request description) the related Issue/Pull request is removed from the list.\n Developers will probably want to see the Pull Request in their board (since they created it) while QA would probably rather see the Issue (since they created it).'
-      )
-      /*eslint-enable no-alert */
-    }
-
-    let managerMenu
-    if (repoInfos.length) {
-      managerMenu = [
-        <SettingsItem key="kanban" to={filters.setRouteName('kanban').url()}>
-          Kanban
-        </SettingsItem>,
-        <SettingsItem key="by-users" to={filters.setRouteName('by-user').url()}>
-          Issues by Assignee
-        </SettingsItem>,
-      ]
-    }
 
     return (
       <div className="app-nav">
@@ -239,105 +290,32 @@ class AppNav extends React.Component {
           </BS.Navbar.Header>
           <BS.Nav key="repo-details">
             {repoDetails}
-            <li key="active-filter" className="active-filter">
-              <span className="-just-here-because-bootstrap-pads-anchor-children-in-the-nav">
-                {filtering}
-              </span>
-            </li>
-          </BS.Nav>
-          <BS.Nav key="right" pullRight>
-            <FilterDropdown filters={this.props.filters} />
-
             <BS.NavDropdown
               key="settings"
               id="display-settings"
-              title={settingsTitle}
+              title={<EyeIcon />}
             >
-              <BS.MenuItem key="display" header>
-                Display Settings
-              </BS.MenuItem>
-              <SettingsItem
-                key="ShowSimpleList"
-                onSelect={() => this.props.dispatch(toggleShowSimpleList())}
-                isChecked={settings.isShowSimpleList}
-              >
-                Show Simple List
-              </SettingsItem>
-              <SettingsItem
-                key="HideUncategorized"
-                onSelect={() => this.props.dispatch(toggleHideUncategorized())}
-                isChecked={settings.isHideUncategorized}
-              >
-                Hide Uncategorized
-              </SettingsItem>
-              <SettingsItem
-                key="ShowEmptyColumns"
-                onSelect={() => this.props.dispatch(toggleShowEmptyColumns())}
-                isChecked={settings.isShowEmptyColumns}
-              >
-                Show Empty Columns
-              </SettingsItem>
-              <BS.MenuItem key="divider" divider />
-              <BS.MenuItem key="viewing-mode" header>
-                Viewing Mode
-                <button
-                  className="btn btn-xs btn-default"
-                  onClick={settingsMenuHelp}
+              {repoInfos.length > 0 && (
+                <SettingsItem
+                  key="kanban"
+                  to={filters.setRouteName('kanban').url()}
                 >
-                  <QuestionIcon />
-                </button>
-              </BS.MenuItem>
-              <SettingsItem
-                key="RelatedHideIssues"
-                onSelect={() =>
-                  this.props.dispatch(setViewingMode(VIEWING_MODE.DEV))
-                }
-                isChecked={settings.viewingMode === VIEWING_MODE.DEV}
-              >
-                Developer-Friendly
-              </SettingsItem>
-              <SettingsItem
-                key="RelatedHidePullRequests"
-                onSelect={() =>
-                  this.props.dispatch(setViewingMode(VIEWING_MODE.QA))
-                }
-                isChecked={settings.viewingMode === VIEWING_MODE.QA}
-              >
-                QA-Friendly
-              </SettingsItem>
-              <SettingsItem
-                key="RelatedShowAll"
-                onSelect={() =>
-                  this.props.dispatch(setViewingMode(VIEWING_MODE.COMBINED))
-                }
-                isChecked={settings.viewingMode === VIEWING_MODE.COMBINED}
-              >
-                Combined
-              </SettingsItem>
-              <BS.MenuItem key="divider2" divider />
-              <BS.MenuItem key="api-settings" header>
-                GitHub API Settings
-              </BS.MenuItem>
-              <SettingsItem
-                key="ShowPullRequestData"
-                onSelect={() =>
-                  this.props.dispatch(toggleShowPullRequestData())
-                }
-                isChecked={settings.isShowPullRequestData}
-              >
-                Show More Pull Request Info
-              </SettingsItem>
-
-              <BS.MenuItem key="divider3" divider />
-              <BS.MenuItem key="manager-pages" header>
-                Manager-ish Pages
-              </BS.MenuItem>
-              {managerMenu}
+                  <ProjectIcon /> Kanban
+                </SettingsItem>
+              )}
+              {repoInfos.length > 0 && (
+                <SettingsItem
+                  key="by-users"
+                  to={filters.setRouteName('by-user').url()}
+                >
+                  <PersonIcon /> Issues by Assignee
+                </SettingsItem>
+              )}
               <SettingsItem
                 key="milestone-planning"
                 to={filters.setRouteName('by-milestone').url()}
               >
-                Milestone Planning View
+                <MilestoneIcon /> Milestone Planning View
               </SettingsItem>
               <SettingsItem
                 key="burnup"
@@ -351,14 +329,15 @@ class AppNav extends React.Component {
               >
                 <GraphIcon /> Gantt Chart
               </SettingsItem>
-              <BS.MenuItem key="divider4" divider />
-              <BS.MenuItem
-                key="reset-databases"
-                onClick={this.promptAndResetDatabases}
-              >
-                Reset Local Cache...
-              </BS.MenuItem>
             </BS.NavDropdown>
+            <li key="active-filter" className="active-filter">
+              <span className="-just-here-because-bootstrap-pads-anchor-children-in-the-nav">
+                {filtering}
+              </span>
+            </li>
+          </BS.Nav>
+          <BS.Nav key="right" pullRight>
+            <FilterDropdown filters={this.props.filters} />
             {loginButton}
           </BS.Nav>
         </BS.Navbar>

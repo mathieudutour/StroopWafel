@@ -3,6 +3,7 @@
 }
 
 .issue {
+  position: relative;
   cursor: move;
   padding: 1rem;
 
@@ -10,7 +11,6 @@
   &.is-simple-list {
     border-radius: 0 !important;
     margin: 1px;
-    // border: 1px solid black;
     padding: 0.5rem;
     display: flex;
 
@@ -58,58 +58,41 @@
     visibility: hidden;
   }
 
-  .list-group-item-heading {
-    margin-bottom: 1rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-top: 1rem;
-    // background-color: white;
-    font-weight: normal; // from h4
-
-    .x-font-and-emoji(14px); // This is what is set on the <h4>
-
+  .card-meta {
     > .issue-blurb {
       .blurb-number-link {
         color: #337ab7;
       } // bootstrap link color
     }
 
-    // a.issue-status:hover { text-decoration: none; }
-    .issue-status {
-      font-size: 1rem;
-
-      &[data-status-state='success'] {
-        color: #6cdf44;
-      }
-      &[data-status-state='pending'] {
-        color: #fb0;
-      }
-      &[data-status-state='error'],
-      &[data-status-state='failure'] {
-        color: #d00;
-        font-weight: bold;
-      }
-
-      .status-icon {
-      }
-    }
-
     .merge-conflict-warning {
       color: #ee0;
     }
+  }
 
-    // .related-issues .issue-blurb {
-    //   color: #999;
-    //   font-weight: normal; /* Because it is in a H4 thanks to ListGroupItem */
-    //   font-size: 1.5rem;
-    // }
+  .issue-status {
+    position: absolute;
+    height: 3px;
+    width: calc(100%);
+    left: 0;
+    bottom: 0;
+    color: transparent;
+    background-color: currentColor;
 
-    // // The list of labels(tags)
-    // .issue-labels .badge {
-    //   max-width: 10rem;
-    //   overflow-x: hidden;
-    //   text-overflow: ellipsis;
-    // }
+    &[data-status-state='success'] {
+      color: #6cdf44;
+    }
+    &[data-status-state='pending'] {
+      color: #fb0;
+    }
+    &[data-status-state='error'],
+    &[data-status-state='failure'] {
+      color: #d00;
+    }
+
+    &.is-merge-conflict {
+      .x-stripes(currentColor; 0.9);
+    }
   }
 
   // Depending on the issue listing type (simple or card) this element could be in the footer, or not
@@ -198,60 +181,10 @@
       }
     }
   }
-
-  // Elements that can occur anywhere in an issue
-
-  /* When a Pull Request is not mergeable then make the background a light gray with slashes */
-  /* Default merge conflict color when no CI status */
-  &.is-pull-request {
-    // &:not(.is-mergeable) .list-group-item-heading .issue-blurb .blurb-icon { .x-stripes(#ccc; .8); }
-    &.is-merge-conflict:not(.is-updated) {
-      .x-stripes(#fcfcfc; 0.9);
-    }
-    &.is-merge-conflict.is-updated {
-      .x-stripes(#fcfcd9; 0.9);
-    }
-    &.is-merge-conflict.is-pull-request-to-different-branch {
-      .x-stripes(#e9e9fc; 0.9);
-    }
-  }
-
-  /* Color the blurb icon to be gray if there is an issue */
-  // &.is-pull-request {
-  //   /* When a Pull Request is not mergeable then make the background a light gray with slashes */
-  //   /* Default merge conflict color when no CI status */
-  //   &:not(.is-mergeable) { .x-stripes(#ccc; .8); }
-  //
-  //   // Make the blurb icon gray when the PR is not mergeable
-  //   // or when CI does not report success
-  //   &:not(.is-mergeable),
-  //   &[data-status-state='pending'],
-  //   &[data-status-state='error'],
-  //   &[data-status-state='failure'] {
-  //     .issue-footer .blurb-icon { color: #888; }
-  //   }
-  //
-  //   /* Pull Request status. pending, success, error, or failure */
-  //   &[data-status-state='pending'] {
-  //     // TODO: Move the animation into the mixin
-  //     // Animate the bar while CI is running (uses bootstrap's progress-bar-stripes)
-  //     -webkit-animation: progress-bar-stripes 2s linear infinite;
-  //     animation: progress-bar-stripes 2s linear infinite;
-  //
-  //     .x-stripes(#fcfc00; .9);
-  //   }
-  //   &[data-status-state='success'] { background-color: #6cdf44; } &[data-status-state='error'] { background-color: #d00; }
-  //   &[data-status-state='failure'] { background-color: #d00; }
-  //
-  // }
 } /* End Issue */
 
 .related-issues {
   background-color: #e6e6e6;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
-
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
 
   padding: 0 1rem;
 
