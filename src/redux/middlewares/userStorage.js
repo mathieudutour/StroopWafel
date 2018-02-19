@@ -1,10 +1,14 @@
-export default ({ getState }) => next => action => {
-  const result = next(action)
-  if (action && action.meta && action.meta.updateUserStorage) {
-    window.localStorage.setItem(
-      'stroopwafel-user',
-      JSON.stringify(getState().user)
-    )
-  }
-  return result
-}
+import {
+  getInitialStateCreator,
+  middlewareCreator,
+} from './utils/storage-middleware'
+
+export const STORAGE_KEY = 'stroopwafel-user'
+
+export const getInitialState = getInitialStateCreator(STORAGE_KEY)
+
+export default middlewareCreator({
+  storageKey: STORAGE_KEY,
+  metaKey: 'updateUserStorage',
+  stateKey: 'user',
+})

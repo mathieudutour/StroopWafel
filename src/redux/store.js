@@ -12,6 +12,7 @@ import {
 
 import settingsStorageMiddleware from './middlewares/settingsStorage'
 import userStorageMiddleware from './middlewares/userStorage'
+import projectStorageMiddleware from './middlewares/projectStorage'
 import githubMiddleware from './middlewares/github'
 
 import reducers from './reducers'
@@ -29,6 +30,7 @@ let _middlewares = [
   routerMiddleware(hashHistory),
   settingsStorageMiddleware,
   userStorageMiddleware,
+  projectStorageMiddleware,
 ]
 
 if (process.env.NODE_ENV !== 'production') {

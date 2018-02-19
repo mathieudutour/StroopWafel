@@ -1,5 +1,6 @@
 import Duck from 'reduck'
 import { resolve } from 'redux-optimist-promise'
+import { getInitialState } from '../middlewares/settingsStorage'
 
 import {
   RESET_SETTINGS,
@@ -17,15 +18,6 @@ export const VIEWING_MODE = {
   COMBINED: 3,
 }
 
-let storedSettings
-try {
-  storedSettings = JSON.parse(
-    window.localStorage.getItem('stroopwafel-settings')
-  )
-} catch (err) {
-  storedSettings = undefined
-}
-
 const DEFAULT_STATE = {
   showSimpleList: false,
   hideUncategorized: false,
@@ -34,7 +26,7 @@ const DEFAULT_STATE = {
   showPullRequestData: false, // By default (anon users) this is unchecked. Gets checked when user logs in
 }
 
-const initialState = storedSettings || DEFAULT_STATE
+const initialState = getInitialState() || DEFAULT_STATE
 
 const duck = new Duck('settings', initialState)
 

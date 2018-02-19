@@ -1,4 +1,5 @@
 import Duck from 'reduck'
+import { getInitialState } from '../middlewares/userStorage'
 
 import {
   LOGOUT,
@@ -9,13 +10,6 @@ import {
   RESET_DATABASES,
 } from '../actions'
 
-let storedSettings
-try {
-  storedSettings = JSON.parse(window.localStorage.getItem('stroopwafel-user'))
-} catch (err) {
-  storedSettings = undefined
-}
-
 const DEFAULT_STATE = {
   ready: true,
   rootURL: undefined,
@@ -23,7 +17,7 @@ const DEFAULT_STATE = {
   token: undefined,
 }
 
-const initialState = storedSettings || DEFAULT_STATE
+const initialState = getInitialState() || DEFAULT_STATE
 
 const duck = new Duck('user', initialState)
 
@@ -31,6 +25,7 @@ export const logout = duck.defineAction(LOGOUT, {
   creator() {
     return {
       meta: {
+        updateProjectStorage: true,
         updateUserStorage: true,
         github: { action: 'logout' },
       },
@@ -133,10 +128,8 @@ export const fetchRepositories = duck.defineAction(FETCH_REPOS, {
         ...(state.info || {}),
         repositories: payload.map(r => ({
           createdAt: r.createdAt,
-          defaultBranch: r.defaultBranch,
           description: r.description,
           fork: r.fork,
-          forks: r.forks,
           fullName: r.fullName,
           htmlUrl: r.htmlUrl,
           id: r.id,
@@ -145,7 +138,6 @@ export const fetchRepositories = duck.defineAction(FETCH_REPOS, {
           openIssues: r.openIssues,
           owner: r.owner,
           private: r.private,
-          stargazersCount: r.stargazersCount,
           updatedAt: r.updatedAt,
           hasIssues: r.hasIssues,
         })),

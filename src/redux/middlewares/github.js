@@ -52,15 +52,7 @@ export default ({ getState, dispatch }) => next => action => {
         .then(({ emojis }) => emojis.fetch())
       break
     case 'fetchIssues': {
-      const { issues, filter } = getState()
-      if (
-        !action.payload.isForced &&
-        issues.cacheCards &&
-        issues.cacheCardsRepoInfos === JSON.stringify(action.payload.repoInfos)
-      ) {
-        promise = Promise.resolve(issues.cacheCards)
-        break
-      }
+      const { filter } = getState()
 
       promise = fetchIssues(
         githubClient,

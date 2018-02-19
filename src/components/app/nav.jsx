@@ -290,46 +290,45 @@ class AppNav extends React.Component {
           </BS.Navbar.Header>
           <BS.Nav key="repo-details">
             {repoDetails}
-            <BS.NavDropdown
-              key="settings"
-              id="display-settings"
-              title={<EyeIcon />}
-            >
-              {repoInfos.length > 0 && (
+            {repoInfos.length > 0 && (
+              <BS.NavDropdown
+                key="settings"
+                id="display-settings"
+                title={<EyeIcon />}
+              >
                 <SettingsItem
                   key="kanban"
                   to={filters.setRouteName('kanban').url()}
                 >
                   <ProjectIcon /> Kanban
                 </SettingsItem>
-              )}
-              {repoInfos.length > 0 && (
                 <SettingsItem
                   key="by-users"
                   to={filters.setRouteName('by-user').url()}
                 >
                   <PersonIcon /> Issues by Assignee
                 </SettingsItem>
-              )}
-              <SettingsItem
-                key="milestone-planning"
-                to={filters.setRouteName('by-milestone').url()}
-              >
-                <MilestoneIcon /> Milestone Planning View
-              </SettingsItem>
-              <SettingsItem
-                key="burnup"
-                to={filters.setRouteName('burnup').url()}
-              >
-                <GraphIcon /> Burnup Chart
-              </SettingsItem>
-              <SettingsItem
-                key="gantt-chart"
-                to={filters.setRouteName('gantt').url()}
-              >
-                <GraphIcon /> Gantt Chart
-              </SettingsItem>
-            </BS.NavDropdown>
+
+                <SettingsItem
+                  key="milestone-planning"
+                  to={filters.setRouteName('by-milestone').url()}
+                >
+                  <MilestoneIcon /> Milestone Planning View
+                </SettingsItem>
+                <SettingsItem
+                  key="burnup"
+                  to={filters.setRouteName('burnup').url()}
+                >
+                  <GraphIcon /> Burnup Chart
+                </SettingsItem>
+                <SettingsItem
+                  key="gantt-chart"
+                  to={filters.setRouteName('gantt').url()}
+                >
+                  <GraphIcon /> Gantt Chart
+                </SettingsItem>
+              </BS.NavDropdown>
+            )}
             <li key="active-filter" className="active-filter">
               <span className="-just-here-because-bootstrap-pads-anchor-children-in-the-nav">
                 {filtering}
@@ -337,7 +336,9 @@ class AppNav extends React.Component {
             </li>
           </BS.Nav>
           <BS.Nav key="right" pullRight>
-            <FilterDropdown filters={this.props.filters} />
+            {repoInfos.length > 0 && (
+              <FilterDropdown filters={this.props.filters} />
+            )}
             {loginButton}
           </BS.Nav>
         </BS.Navbar>

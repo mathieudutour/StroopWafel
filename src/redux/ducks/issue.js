@@ -23,7 +23,6 @@ const initialState = {
   GRAPH_CACHE: new BipartiteGraph(),
   CARD_CACHE: {},
   LABEL_CACHE: {},
-  cacheCardsRepoInfos: null,
   cards: [],
   labels: [],
   milestones: [],
@@ -219,19 +218,19 @@ export const _gotIssuesFromDB = duck.defineAction(GOT_ISSUES_FROM_DB, {
 })
 
 export const fetchIssues = duck.defineAction(FETCH_ISSUES, {
-  creator(repoInfos, forced) {
+  creator(repoInfos) {
     return {
-      payload: { repoInfos, forced },
+      payload: { repoInfos },
       meta: {
+        updateProjectStorage: true,
         github: { action: 'fetchIssues' },
       },
     }
   },
-  reducer(state, { payload }) {
+  reducer(state) {
     return {
       ...state,
       fetchingIssues: true,
-      cacheCardsRepoInfos: JSON.stringify(payload.repoInfos),
     }
   },
   resolve(state, { payload: cards }) {

@@ -339,14 +339,14 @@ class FilterDropdown extends React.Component {
     }
 
     const panel = (
-      <BS.PanelGroup accordion id="filters-accordeon">
-        <BS.Panel className="filter-category" defaultExpanded={false}>
+      <BS.PanelGroup accordion id="filters-accordeon" defaultActiveKey={-1}>
+        <BS.Panel className="filter-category" eventKey={1}>
           <BS.Panel.Heading>
             <BS.Panel.Title toggle>Labels</BS.Panel.Title>
           </BS.Panel.Heading>
           <BS.Panel.Body collapsible>{this.renderLabels(labels)}</BS.Panel.Body>
         </BS.Panel>
-        <BS.Panel className="filter-category" defaultExpanded={false}>
+        <BS.Panel className="filter-category" eventKey={2}>
           <BS.Panel.Heading>
             <BS.Panel.Title toggle>Milestones</BS.Panel.Title>
           </BS.Panel.Heading>
@@ -354,7 +354,7 @@ class FilterDropdown extends React.Component {
             {this.renderMilestones(milestones)}
           </BS.Panel.Body>
         </BS.Panel>
-        <BS.Panel className="filter-category" defaultExpanded={false}>
+        <BS.Panel className="filter-category" eventKey={3}>
           <BS.Panel.Heading>
             <BS.Panel.Title toggle>Columns</BS.Panel.Title>
           </BS.Panel.Heading>
@@ -362,13 +362,13 @@ class FilterDropdown extends React.Component {
             {this.renderColumnNames(labels)}
           </BS.Panel.Body>
         </BS.Panel>
-        <BS.Panel className="filter-category" defaultExpanded={false}>
+        <BS.Panel className="filter-category" eventKey={4}>
           <BS.Panel.Heading>
             <BS.Panel.Title toggle>States</BS.Panel.Title>
           </BS.Panel.Heading>
           <BS.Panel.Body collapsible>{this.renderStates()}</BS.Panel.Body>
         </BS.Panel>
-        <BS.Panel className="filter-category" defaultExpanded={false}>
+        <BS.Panel className="filter-category" eventKey={5}>
           <BS.Panel.Heading>
             <BS.Panel.Title toggle>Types</BS.Panel.Title>
           </BS.Panel.Heading>

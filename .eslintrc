@@ -33,7 +33,7 @@
         "updateSettingStorage",
         "updateUserStorage",
         "github",
-        "updateEmojisStorage"
+        "updateProjectStorage"
       ]
     ]
   }

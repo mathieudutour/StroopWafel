@@ -61,7 +61,7 @@ class SavedFiltersButton extends React.Component {
         <BS.Button onClick={this.showAddFilter} title="Save Filter">
           <CloudUploadIcon />
         </BS.Button>
-        <BS.Dropdown>
+        <BS.Dropdown id="save-filters-dropdown">
           <BS.Dropdown.Toggle>
             <CloudDownloadIcon />
           </BS.Dropdown.Toggle>
