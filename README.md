@@ -4,7 +4,7 @@ _Serverless Kanban Board for GitHub Issues_
 
 Why waste time and money paying for a Ticket Tracker when you already work in GitHub? Now, you don't have to.
 
-![image](https://cloud.githubusercontent.com/assets/253202/13620649/4ef888cc-e55f-11e5-8576-8970abba8660.png)
+<img width="1485" alt="screen shot 2018-02-20 at 15 39 05" src="https://user-images.githubusercontent.com/3254314/36427008-97edb32c-1654-11e8-9c12-11daa54c0a7d.png">
 
 * [Features](#features)
   * [Multiple Repositories](#multiple-repositories)
