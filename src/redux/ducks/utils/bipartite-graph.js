@@ -22,14 +22,14 @@ class BipartiteGraph {
           })
           const otherCard = getCard({ repoOwner, repoName, number })
           if (otherCard) {
-            this.addEdge(otherCardPath, cardPath, otherCard, card, fixes)
+            this._addEdge(otherCardPath, cardPath, otherCard, card, fixes)
           }
         })
       }
     })
     return this
   }
-  addEdge(a, b, aObj, bObj, edgeValue) {
+  _addEdge(a, b, aObj, bObj, edgeValue) {
     if (!this.edgesA[a]) {
       this.edgesA[a] = {}
     }
@@ -46,13 +46,13 @@ class BipartiteGraph {
   // }
   // removeA(a) {
   //   // Find all the B's so we can remove each edge
-  //   _.each(this.edgesA[a], (b) => {
+  //   Object.keys(this.edgesA[a]).forEach((b) => {
   //     this.removeEdge(a, b);
   //   });
   //   delete this.edgesA[a];
   // }
   // removeB(b) {
-  //   _.each(this.edgesB[b], (a) => {
+  //   Object.keys(this.edgesB[b]).forEach((a) => {
   //     this.removeEdge(a, b);
   //   });
   //   delete this.edgesB[b];

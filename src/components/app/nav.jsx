@@ -28,6 +28,7 @@ import LabelBadge from '../label-badge'
 import MoveModal from '../move-modal'
 import FilterDropdown from './filter-dropdown'
 import Logo from '../logo'
+import RepoInfos from '../repo-infos'
 
 class SettingsItem extends React.Component {
   render() {
@@ -243,45 +244,6 @@ class AppNav extends React.Component {
       )
     }
 
-    let repoDetails = null
-    if (!filtering.length && repoInfos.length) {
-      // Grab the 1st repo
-      const [{ repoOwner, repoName }] = repoInfos
-      let repoNameItems
-      if (repoInfos.length === 1) {
-        repoNameItems = (
-          <Link to={filters.url()} className="repo-name">
-            {repoName}
-          </Link>
-        )
-      } else {
-        repoNameItems = repoInfos.map((repoInfo, index) => {
-          const currentRepoInfos = [repoInfo]
-
-          const repoLink = new selectors.FilterBuilder(
-            filters.state,
-            currentRepoInfos
-          ).url()
-          return (
-            <span key={repoLink} className="repo-name-wrap">
-              {(index !== 0 && '&') || null}
-              {/* Put an & between repo names */}
-              <Link to={repoLink} className="repo-name">
-                {repoInfo.repoName}
-              </Link>
-            </span>
-          )
-        })
-      }
-      repoDetails = (
-        <li className="repo-links">
-          <span className="repo-owner">{repoOwner}</span>
-          {'/'}
-          {repoNameItems}
-        </li>
-      )
-    }
-
     return (
       <div className="app-nav">
         <BS.Navbar className="topbar-nav" fixedTop>
@@ -289,7 +251,7 @@ class AppNav extends React.Component {
             <BS.Navbar.Brand>{brand}</BS.Navbar.Brand>
           </BS.Navbar.Header>
           <BS.Nav key="repo-details">
-            {repoDetails}
+            <RepoInfos repoInfos={repoInfos} filters={filters} />
             {repoInfos.length > 0 && (
               <BS.NavDropdown
                 key="settings"

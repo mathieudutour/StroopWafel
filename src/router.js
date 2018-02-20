@@ -4,6 +4,8 @@ import Dashboard from './components/views/dashboard'
 import RepoKanban from './components/views/kanban'
 import ByMilestoneView from './components/views/by-milestone'
 import ByUserView from './components/views/by-user'
+import AddProject from './components/views/add-project'
+import About from './components/views/about'
 
 export default [
   {
@@ -11,6 +13,14 @@ export default [
     component: App,
     indexRoute: { component: Dashboard },
     childRoutes: [
+      {
+        path: '/about',
+        component: About,
+      },
+      {
+        path: '/add-project',
+        component: AddProject,
+      },
       {
         path: '/r/:repoStr',
         indexRoute: { component: RepoKanban },

@@ -17,7 +17,7 @@ duck.addReducerCase(FETCH_ISSUES, (state, { payload }) => {
   }
   return {
     ...state,
-    [key]: false,
+    [key]: payload.repoInfos,
   }
 })
 

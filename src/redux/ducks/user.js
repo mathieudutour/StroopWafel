@@ -84,7 +84,6 @@ export const fetchUser = duck.defineAction(FETCH_USER, {
   reducer(state) {
     return {
       ...state,
-      ready: false,
     }
   },
   resolve(state, { payload }) {
@@ -93,15 +92,7 @@ export const fetchUser = duck.defineAction(FETCH_USER, {
     }
     return {
       ...state,
-      ready: true,
       info: payload,
-    }
-  },
-  reject(state) {
-    // TODO: handle 403 and clear info and user
-    return {
-      ...state,
-      ready: true,
     }
   },
 })
@@ -110,6 +101,7 @@ export const fetchRepositories = duck.defineAction(FETCH_REPOS, {
   creator() {
     return {
       meta: {
+        updateUserStorage: true,
         github: { action: 'fetchRepos' },
       },
     }

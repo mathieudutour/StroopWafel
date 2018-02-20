@@ -3,6 +3,7 @@
   "plugins": ["react", "duck", "import", "prettier"],
   "extends": [
     "eslint:recommended",
+    "react:recommended",
     "plugin:duck/recommended",
     "plugin:import/recommended",
     "prettier"

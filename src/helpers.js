@@ -32,13 +32,13 @@ export function getCardColumn(card) {
   return { name: UNCATEGORIZED_NAME, color: 'cccccc' }
 }
 
-function getColumnRank({ name }) {
-  if (name === UNCATEGORIZED_NAME) {
+function getColumnRank(label) {
+  if (!label) {
     // make sure Uncategorized is the left-most column
     return -1
   } else {
-    const result = /^(\d+)/.exec(name)
-    return (result && result[1]) || name
+    const result = /^(\d+)/.exec(label.name)
+    return (result && result[1]) || label.name
   }
 }
 

@@ -268,15 +268,11 @@ class FilterDropdown extends React.Component {
         text: name,
         isSelected,
         isExcluded,
-        /*iconNode,*/ toggleHref,
+        toggleHref,
         excludeHref,
       }
     })
 
-    // // Remove the columns from the set of milestoneTitles
-    // items = _.filter(items, ({text}) => {
-    //   return !KANBAN_LABEL.test(text);
-    // });
     items = items.sort(sortByText)
 
     return <FilterCategory items={items} name="milestones" />
