@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import * as BS from 'react-bootstrap'
+import { connect } from 'react-redux'
 import { DragSource } from 'react-dnd'
 import classnames from 'classnames'
 import { Link } from 'react-router'
@@ -386,26 +387,22 @@ class IssueCard extends React.Component {
     let statusBlurb
     if (card.isPullRequest()) {
       const status = card.getPullRequestStatus()
-      let statusIcon
       let statusText
       // pending, success, error, or failure
       switch (status.state) {
         case 'success':
-          statusIcon = <CheckIcon className="status-icon" />
           statusText = 'Your tests passed!'
           break
         case 'pending':
-          statusIcon = <PrimitiveDotIcon className="status-icon" />
           statusText = 'Your tests are running...'
           break
         case 'error':
         case 'failure':
-          statusIcon = <XIcon className="status-icon" />
           statusText = 'Your tests failed!'
           break
         default:
       }
-      if (statusIcon) {
+      if (statusText) {
         const statusClasses = {
           'issue-status': true,
           'is-merge-conflict': card.hasMergeConflict(),
@@ -417,7 +414,7 @@ class IssueCard extends React.Component {
             placement="bottom"
             overlay={
               <BS.Tooltip id={`tooltip-${card.key()}-status`}>
-                <statusIcon /> {status.description || statusText}
+                {status.description || statusText}
               </BS.Tooltip>
             }
           >
@@ -596,8 +593,14 @@ class Issue extends React.Component {
   }
 
   render() {
-    const { card, primaryRepoName, settings, filters } = this.props
-    const { isDragging, connectDragSource } = this.props
+    const {
+      card,
+      primaryRepoName,
+      settings,
+      filters,
+      isDragging,
+      connectDragSource,
+    } = this.props
     const { issue } = card
     let node
     if (!issue) {
@@ -621,4 +624,6 @@ class Issue extends React.Component {
 }
 
 // Export the wrapped version
-export default DragSource(ItemTypes.CARD, issueSource, collect)(Issue)
+export default connect()(
+  DragSource(ItemTypes.CARD, issueSource, collect)(Issue)
+)
