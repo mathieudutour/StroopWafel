@@ -106,7 +106,7 @@ Sometimes Pull Requests go to a branch other than the main branch. This makes it
   * Since there is no server to do OAuth, people need to provide a GitHub token which is stored in `localStorage`
 * It uses the first repository to get the Issue Labels and Milestones.
 * There are special Labels which represent the board columns (in the format `# - Column Title`)
-* To be a "Good API Citizen" `pancake` uses eTags provided by GitHub and saves them in `localStorage` (or `IndexedDB`)
+* To be a "Good API Citizen" StroopWafel uses eTags provided by GitHub and saves them in `localStorage` (or `IndexedDB`)
 
 ### Hosting your own Forked Version
 
