@@ -5,6 +5,7 @@ import * as BS from 'react-bootstrap'
 import classnames from 'classnames'
 import { XIcon, SearchIcon, CheckIcon, MilestoneIcon } from 'react-octicons'
 import SavedFiltersButton from './saved-filters'
+import Time from '../time'
 
 import { UNCATEGORIZED_NAME, KANBAN_LABEL } from '../../helpers'
 
@@ -17,6 +18,10 @@ function sortByText(a, b) {
 class FilterCategory extends React.Component {
   state = { filterStr: null }
 
+  onFilterInputChange = e => {
+    this.setState({ filterStr: e.currentTarget.value })
+  }
+
   filterItems = () => {
     const { items } = this.props
     const { filterStr } = this.state
@@ -27,10 +32,6 @@ class FilterCategory extends React.Component {
       }
       return true
     })
-  }
-
-  onFilterInputChange = e => {
-    this.setState({ filterStr: e.currentTarget.value })
   }
 
   renderItem = item => {
@@ -68,11 +69,7 @@ class FilterCategory extends React.Component {
         {checkmark}
         {iconLink}
         <Link to={toggleHref} className="item-text">
-          <GithubFlavoredMarkdown
-            disableLinks={true}
-            inline={true}
-            text={text}
-          />
+          <GithubFlavoredMarkdown disableLinks inline text={text} />
         </Link>
         {excludeLink}
       </BS.ListGroupItem>
@@ -80,7 +77,7 @@ class FilterCategory extends React.Component {
   }
 
   render() {
-    const { noSearch } = this.props
+    const { noSearch, name } = this.props
     const items = this.filterItems()
 
     let searchInput
@@ -88,7 +85,7 @@ class FilterCategory extends React.Component {
       searchInput = (
         <BS.FormControl
           type="text"
-          placeholder={'Search for ' + this.props.name + '...'}
+          placeholder={`Search for ${name}...`}
           onChange={this.onFilterInputChange}
         />
       )
@@ -107,18 +104,26 @@ class FilterDropdown extends React.Component {
     open: false,
   }
 
+  onToggle = (open, event) => {
+    if (open || !event.isDefaultPrevented) {
+      this.setState({
+        open,
+      })
+    }
+  }
+
+  onSelect = (eventKey, event) => event.preventDefault()
+  /* eslint-disable no-param-reassign */
   renderLabels = items => {
     const { filters } = this.props
     const state = filters.getState()
-    items = items.map(item => {
-      const name = item.name
-
+    items = items.map(({ name, color }) => {
       const isSelected = state.labels.indexOf(name) >= 0
       const isExcluded = state.labels.indexOf(`-${name}`) >= 0
       const iconNode = (
         <span
           className="item-icon tag-name-color"
-          style={{ backgroundColor: `#${item.color}` }}
+          style={{ backgroundColor: `#${color}` }}
         />
       )
       let toggleHref
@@ -151,9 +156,7 @@ class FilterDropdown extends React.Component {
 
     // Remove the columns from the set of labels
     items = items
-      .filter(({ text }) => {
-        return !KANBAN_LABEL.test(text)
-      })
+      .filter(({ text }) => !KANBAN_LABEL.test(text))
       .sort(sortByText)
 
     return <FilterCategory items={items} name="labels" />
@@ -166,15 +169,13 @@ class FilterDropdown extends React.Component {
     // Add the "UNCATEGORIZED_NAME" label into the mix
     items = items.concat({ name: UNCATEGORIZED_NAME })
 
-    items = items.map(item => {
-      const name = item.name
-
+    items = items.map(({ name, color }) => {
       const isSelected = (state.columnLabels || []).indexOf(name) >= 0
       const isExcluded = (state.columnLabels || []).indexOf(`-${name}`) >= 0
       const iconNode = (
         <i
           className="item-icon column-name-color"
-          style={{ backgroundColor: `#${item.color}` }}
+          style={{ backgroundColor: `#${color}` }}
         />
       )
       let toggleHref
@@ -238,11 +239,9 @@ class FilterDropdown extends React.Component {
   renderMilestones = items => {
     const { filters } = this.props
     const state = filters.getState()
-    items = items.map(item => {
-      const name = item.title
-
-      const isSelected = state.milestoneTitles.indexOf(name) >= 0
-      const isExcluded = state.milestoneTitles.indexOf(`-${name}`) >= 0
+    items = items.map(({ title }) => {
+      const isSelected = state.milestoneTitles.indexOf(title) >= 0
+      const isExcluded = state.milestoneTitles.indexOf(`-${title}`) >= 0
       // const iconNode = (
       //   <MilestoneIcon/>
       // );
@@ -250,22 +249,22 @@ class FilterDropdown extends React.Component {
       let excludeHref
       if (isExcluded) {
         toggleHref = filters
-          .toggleMilestoneTitle(`-${name}`)
-          .toggleMilestoneTitle(name)
+          .toggleMilestoneTitle(`-${title}`)
+          .toggleMilestoneTitle(title)
           .url()
-        excludeHref = filters.toggleMilestoneTitle(`-${name}`).url()
+        excludeHref = filters.toggleMilestoneTitle(`-${title}`).url()
       } else if (isSelected) {
-        toggleHref = filters.toggleMilestoneTitle(name).url()
+        toggleHref = filters.toggleMilestoneTitle(title).url()
         excludeHref = filters
-          .toggleMilestoneTitle(name)
-          .toggleMilestoneTitle(`-${name}`)
+          .toggleMilestoneTitle(title)
+          .toggleMilestoneTitle(`-${title}`)
           .url()
       } else {
-        toggleHref = filters.toggleMilestoneTitle(name).url()
-        excludeHref = filters.toggleMilestoneTitle(`-${name}`).url()
+        toggleHref = filters.toggleMilestoneTitle(title).url()
+        excludeHref = filters.toggleMilestoneTitle(`-${title}`).url()
       }
       return {
-        text: name,
+        text: title,
         isSelected,
         isExcluded,
         toggleHref,
@@ -278,17 +277,17 @@ class FilterDropdown extends React.Component {
     return <FilterCategory items={items} name="milestones" />
   }
 
+  /* eslint-enable */
+
   renderStates = () => {
     const { filters } = this.props
     const { states } = filters.getState()
 
-    const items = ['open', 'closed'].map(state => {
-      return {
-        text: state,
-        isSelected: states.indexOf(state) >= 0,
-        toggleHref: filters.toggleState(state).url(),
-      }
-    })
+    const items = ['open', 'closed'].map(state => ({
+      text: state,
+      isSelected: states.indexOf(state) >= 0,
+      toggleHref: filters.toggleState(state).url(),
+    }))
 
     return <FilterCategory noSearch items={items} name="states" />
   }
@@ -297,13 +296,11 @@ class FilterDropdown extends React.Component {
     const { filters } = this.props
     const { types } = filters.getState()
 
-    const items = ['issue', 'pull-request'].map(type => {
-      return {
-        text: type,
-        isSelected: types.indexOf(type) >= 0,
-        toggleHref: filters.toggleType(type).url(),
-      }
-    })
+    const items = ['issue', 'pull-request'].map(type => ({
+      text: type,
+      isSelected: types.indexOf(type) >= 0,
+      toggleHref: filters.toggleType(type).url(),
+    }))
 
     return <FilterCategory noSearch items={items} name="types" />
   }
@@ -324,11 +321,7 @@ class FilterDropdown extends React.Component {
       return [
         <MilestoneIcon key="icon" className="milestone-icon" />,
         <span key="milestone-title" className="milestone-title">
-          <GithubFlavoredMarkdown
-            inline
-            disableLinks={true}
-            text={milestone.title}
-          />
+          <GithubFlavoredMarkdown inline disableLinks text={milestone.title} />
         </span>,
         dueDate,
       ]
@@ -430,21 +423,9 @@ class FilterDropdown extends React.Component {
       </BS.NavDropdown>
     )
   }
-
-  onToggle = (open, event) => {
-    if (open || !event.isDefaultPrevented) {
-      this.setState({
-        open,
-      })
-    }
-  }
-
-  onSelect = (eventKey, event) => event.preventDefault()
 }
 
-export default connect(state => {
-  return {
-    labels: state.issues.labels,
-    milestones: state.issues.milestones,
-  }
-})(FilterDropdown)
+export default connect(state => ({
+  labels: state.issues.labels,
+  milestones: state.issues.milestones,
+}))(FilterDropdown)

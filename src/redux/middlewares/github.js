@@ -25,26 +25,25 @@ export default ({ getState, dispatch }) => next => action => {
           githubClient.credentials.token = action.payload.token
           githubClient.credentials.rootURL = action.payload.rootURL
         })
-        .then(() => {
-          return githubClient.getOcto().then(({ user }) => user.fetch())
-        })
+        .then(() => githubClient.getOcto())
+        .then(({ user }) => user.fetch())
       break
     case 'fetchUser':
       promise = githubClient.hasCredentials()
         ? githubClient.getOcto().then(({ user }) => user.fetch())
-        : Promise.reject('no credentials')
+        : Promise.reject(new Error('no credentials'))
       break
     case 'fetchRepos':
       promise = githubClient.hasCredentials()
         ? githubClient.getOcto().then(({ user }) => user.repos.fetchAll())
-        : Promise.reject('no credentials')
+        : Promise.reject(new Error('no credentials'))
       break
     case 'fetchRepo':
       promise = githubClient.hasCredentials()
         ? githubClient
             .getOcto()
             .then(({ repos }) => repos(action.payload.repoFullName).fetch())
-        : Promise.reject('no credentials')
+        : Promise.reject(new Error('no credentials'))
       break
     case 'fetchEmojis':
       promise = githubClient
@@ -114,6 +113,8 @@ export default ({ getState, dispatch }) => next => action => {
       break
     case 'reset':
       promise = Promise.all([githubClient.reset(), Database.resetDatabases()])
+      break
+    default:
       break
   }
 

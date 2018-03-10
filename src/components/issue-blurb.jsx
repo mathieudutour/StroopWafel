@@ -28,11 +28,9 @@ class IssueOrPullRequestBlurb extends React.Component {
 
       let icon = null
       if (isPullRequest) {
-        let state
+        let { state } = issue
         if (card.isPullRequestMerged()) {
           state = 'merged'
-        } else {
-          state = issue.state
         }
         icon = (
           <GitPullRequestIcon
@@ -64,18 +62,17 @@ class IssueOrPullRequestBlurb extends React.Component {
           {blurbContext}
         </span>
       )
-    } else {
-      // no Issue found
-      return (
-        <span className="issue-blurb">
-          <a className="blurb-number-link" target="_blank" href={href}>
-            <span className="blurb-secondary-repo">{multipleRepoName}</span>
-            <span className="blurb-number">#{card.number}</span>
-          </a>
-          {blurbContext}
-        </span>
-      )
     }
+    // no Issue found
+    return (
+      <span className="issue-blurb">
+        <a className="blurb-number-link" target="_blank" href={href}>
+          <span className="blurb-secondary-repo">{multipleRepoName}</span>
+          <span className="blurb-number">#{card.number}</span>
+        </a>
+        {blurbContext}
+      </span>
+    )
   }
 }
 

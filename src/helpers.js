@@ -36,10 +36,9 @@ function getColumnRank(label) {
   if (!label) {
     // make sure Uncategorized is the left-most column
     return -1
-  } else {
-    const result = /^(\d+)/.exec(label.name)
-    return (result && result[1]) || label.name
   }
+  const result = /^(\d+)/.exec(label.name)
+  return (result && result[1]) || label.name
 }
 
 export function sortByColumnName(decrease) {

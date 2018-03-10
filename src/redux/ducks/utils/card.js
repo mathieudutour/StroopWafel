@@ -1,42 +1,12 @@
 import * as Database from '../../middlewares/utils/indexedDB'
 import { getDataFromHtml } from '../../../gfm-dom'
 
-export const toIssueKey = ({ repoOwner, repoName, number }) => {
-  return `${repoOwner}/${repoName}#${number}`
-}
+export const toIssueKey = ({ repoOwner, repoName, number }) =>
+  `${repoOwner}/${repoName}#${number}`
 
 export const getCard = (CARD_CACHE, card) => {
   const key = toIssueKey(card)
   return CARD_CACHE[key]
-}
-
-export const cardFactory = (CARD_CACHE, GRAPH_CACHE) => (
-  { repoOwner, repoName, number, issue, pr = null, prStatuses = null },
-  cast
-) => {
-  let card = getCard(CARD_CACHE, { repoOwner, repoName, number })
-  if (card && issue) {
-    card.resetPromisesAndState(issue, pr, prStatuses)
-    return card
-  } else if (card) {
-    return card
-  } else {
-    card = new Card(
-      repoOwner,
-      repoName,
-      number,
-      GRAPH_CACHE,
-      issue,
-      pr,
-      prStatuses
-    )
-    if (!cast) {
-      GRAPH_CACHE.addCards([card], getCard.bind(this, CARD_CACHE))
-    }
-    const key = toIssueKey({ repoOwner, repoName, number })
-    CARD_CACHE[key] = card
-    return card
-  }
 }
 
 export default class Card {
@@ -76,9 +46,8 @@ export default class Card {
         return false
       }
       return this.pr.mergeable === false
-    } else {
-      return false // return false for now just to be safe
     }
+    return false // return false for now just to be safe
   }
   getPullRequestStatus() {
     if (!this.prStatus) {
@@ -89,9 +58,7 @@ export default class Card {
     // Pull out the 1st status which matches the overall status of the commit.
     // That way we get the targetURL and message.
     // When 'pending', there might not be entries in statuses which there is is no actual status
-    const theStatus = statuses.find(status => {
-      return status.state === state
-    })
+    const theStatus = statuses.find(status => status.state === state)
     if (!theStatus) {
       return {}
     }
@@ -125,9 +92,8 @@ export default class Card {
     }
     if (this.isPullRequest() && this.pr) {
       return this.pr.updatedAt
-    } else {
-      return this.issue.updatedAt
     }
+    return this.issue.updatedAt
   }
   _getDataFromHtml() {
     if (this.__cachedHtmlBody !== this.issue.body) {
@@ -172,7 +138,7 @@ export default class Card {
     }
     if (!this._prPromise || options.isForced) {
       const oldHead = this.pr && this.pr.head.sha
-      return (this._prPromise = githubClient
+      this._prPromise = githubClient
         .getOcto()
         .then(({ repos }) =>
           repos(this.repoOwner, this.repoName)
@@ -193,7 +159,7 @@ export default class Card {
           if (!isSame && !options.skipSavingToDb) {
             Database.putCard(this)
           }
-        }))
+        })
     }
     return this._prPromise
   }
@@ -281,13 +247,39 @@ export default class Card {
     if (this.issue) {
       if (this.isPullRequest()) {
         return this.fetchPRStatus(githubClient, options)
-      } else {
-        return Promise.resolve(
-          'There is already an issue. no need to fetch again'
-        )
       }
-    } else {
-      return this.fetchIssue(githubClient, options)
+      return Promise.resolve(
+        'There is already an issue. no need to fetch again'
+      )
     }
+    return this.fetchIssue(githubClient, options)
   }
+}
+
+export const cardFactory = (CARD_CACHE, GRAPH_CACHE) => (
+  { repoOwner, repoName, number, issue, pr = null, prStatuses = null },
+  cast
+) => {
+  let card = getCard(CARD_CACHE, { repoOwner, repoName, number })
+  if (card && issue) {
+    card.resetPromisesAndState(issue, pr, prStatuses)
+    return card
+  } else if (card) {
+    return card
+  }
+  card = new Card(
+    repoOwner,
+    repoName,
+    number,
+    GRAPH_CACHE,
+    issue,
+    pr,
+    prStatuses
+  )
+  if (!cast) {
+    GRAPH_CACHE.addCards([card], getCard.bind(this, CARD_CACHE))
+  }
+  const key = toIssueKey({ repoOwner, repoName, number })
+  CARD_CACHE[key] = card // eslint-disable-line
+  return card
 }

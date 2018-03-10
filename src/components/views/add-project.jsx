@@ -11,31 +11,25 @@ import { fetchRepositories, fetchRepo } from '../../redux/ducks/user'
 import { goTo, selectors } from '../../redux/ducks/filter'
 import AsyncButton from '../async-button'
 import Time from '../time'
+import AppNav from '../app/nav'
 
-class ListGroup extends React.Component {
-  render() {
-    const { children } = this.props
-    return (
-      <AutoSizer disableHeight>
-        {({ width }) => (
-          <List
-            height={document.documentElement.clientWidth - 203 - 200}
-            rowHeight={41}
-            rowCount={children.length}
-            rowRenderer={({ index, key, style }) => {
-              return (
-                <BS.ListGroupItem key={key} style={style}>
-                  {children[index]}
-                </BS.ListGroupItem>
-              )
-            }}
-            width={width}
-          />
+const ListGroup = ({ children }) => (
+  <AutoSizer disableHeight>
+    {({ width }) => (
+      <List
+        height={document.documentElement.clientWidth - 203 - 200}
+        rowHeight={41}
+        rowCount={children.length}
+        rowRenderer={({ index, key, style }) => (
+          <BS.ListGroupItem key={key} style={style}>
+            {children[index]}
+          </BS.ListGroupItem>
         )}
-      </AutoSizer>
-    )
-  }
-}
+        width={width}
+      />
+    )}
+  </AutoSizer>
+)
 
 class RepoItem extends React.Component {
   handleSelect = () => {
@@ -82,38 +76,38 @@ class RepoItem extends React.Component {
   }
 }
 
-class RepoGroup extends React.Component {
-  render() {
-    const { repos, toggleSelect, selectedRepos, search } = this.props
+const RepoGroup = ({
+  repos,
+  toggleSelect,
+  selectedRepos,
+  search,
+  dispatch,
+}) => (
+  <div>
+    <BS.Col md={12}>
+      <BS.Panel>
+        <ListGroup>
+          {repos
+            .sort((a, b) => (a.pushedAt > b.pushedAt ? -1 : 1))
+            .filter(createFilter(search, ['name']))
+            .map(repo => {
+              const key = `${repo.owner.login}/${repo.name}`
 
-    return (
-      <div>
-        <BS.Col md={12}>
-          <BS.Panel>
-            <ListGroup>
-              {repos
-                .sort((a, b) => (a.pushedAt > b.pushedAt ? -1 : 1))
-                .filter(createFilter(search, ['name']))
-                .map(repo => {
-                  const key = repo.owner.login + '/' + repo.name
-
-                  return (
-                    <RepoItem
-                      key={key}
-                      dispatch={this.props.dispatch}
-                      repo={repo}
-                      isSelected={selectedRepos[key]}
-                      onSelect={toggleSelect}
-                    />
-                  )
-                })}
-            </ListGroup>
-          </BS.Panel>
-        </BS.Col>
-      </div>
-    )
-  }
-}
+              return (
+                <RepoItem
+                  key={key}
+                  dispatch={dispatch}
+                  repo={repo}
+                  isSelected={selectedRepos[key]}
+                  onSelect={toggleSelect}
+                />
+              )
+            })}
+        </ListGroup>
+      </BS.Panel>
+    </BS.Col>
+  </div>
+)
 
 class OrganizationItem extends React.Component {
   handleClick = () => {
@@ -125,7 +119,7 @@ class OrganizationItem extends React.Component {
     return (
       <BS.MenuItem onClick={this.handleClick}>
         <img
-          alt={'@' + this.props.user.login}
+          alt={`@${this.props.user.login}`}
           className="avatar-image"
           src={this.props.user.avatarUrl}
         />{' '}
@@ -141,16 +135,18 @@ class ListRepos extends React.Component {
     search: '',
   }
 
-  handleOwnerSelection = owner => {
-    this.setState({
-      selectedOwner: owner,
-    })
-  }
   onSearch = event => {
     this.setState({
       search: event.target.value,
     })
   }
+
+  handleOwnerSelection = owner => {
+    this.setState({
+      selectedOwner: owner,
+    })
+  }
+
   render() {
     const { repos, user, selectedRepos } = this.props
     const { search } = this.state
@@ -174,15 +170,13 @@ class ListRepos extends React.Component {
       reposByOwner[repoOwner].push(repo)
     })
 
-    let sortedRepoOwners = Object.keys(repoOwnersUpdatedAt)
-      .map(repoOwner => {
-        return repoOwnersUpdatedAt[repoOwner]
-      })
+    const sortedRepoOwners = Object.keys(repoOwnersUpdatedAt)
+      .map(repoOwner => repoOwnersUpdatedAt[repoOwner])
       .sort(
         (a, b) => (a.login === user.login || a.updatedAt > b.updatedAt ? -1 : 1)
       )
 
-    const selectedOwner = this.props.selectedOwner || sortedRepoOwners[0]
+    const selectedOwner = this.state.selectedOwner || sortedRepoOwners[0]
 
     return (
       <div>
@@ -193,15 +187,13 @@ class ListRepos extends React.Component {
                 <OrganizationItem user={selectedOwner} />
               </BS.Dropdown.Toggle>
               <BS.Dropdown.Menu>
-                {sortedRepoOwners.map(owner => {
-                  return (
-                    <OrganizationItem
-                      key={owner.login}
-                      user={owner}
-                      onClick={this.handleOwnerSelection}
-                    />
-                  )
-                })}
+                {sortedRepoOwners.map(owner => (
+                  <OrganizationItem
+                    key={owner.login}
+                    user={owner}
+                    onClick={this.handleOwnerSelection}
+                  />
+                ))}
               </BS.Dropdown.Menu>
             </BS.Dropdown>
           </BS.Col>
@@ -290,15 +282,10 @@ class DashboardShell extends React.Component {
     selectedRepos: {},
   }
 
-  toggleSelect = (repoOwner, repoName) => {
-    const key = repoOwner + '/' + repoName
-    const { selectedRepos } = this.state
-    this.setState({
-      selectedRepos: {
-        ...selectedRepos,
-        [key]: selectedRepos[key] ? undefined : { repoOwner, repoName },
-      },
-    })
+  componentWillMount() {
+    if (this.props.user && !this.props.user.repositories) {
+      this.props.dispatch(fetchRepositories())
+    }
   }
 
   onClickMore = () => {
@@ -307,10 +294,15 @@ class DashboardShell extends React.Component {
 
   onHide = () => this.setState({ showModal: false })
 
-  componentWillMount() {
-    if (this.props.user && !this.props.user.repositories) {
-      this.props.dispatch(fetchRepositories())
-    }
+  toggleSelect = (repoOwner, repoName) => {
+    const key = `${repoOwner}/${repoName}`
+    const { selectedRepos } = this.state
+    this.setState({
+      selectedRepos: {
+        ...selectedRepos,
+        [key]: selectedRepos[key] ? undefined : { repoOwner, repoName },
+      },
+    })
   }
 
   render() {
@@ -330,17 +322,15 @@ class DashboardShell extends React.Component {
           selectedRepos={selectedRepos}
         />
       )
+    } else if (!ready) {
+      myRepos = (
+        <span className="custom-loading is-loading">
+          <SyncIcon className="icon-spin" />
+          {' Loading List of Repositories...'}
+        </span>
+      )
     } else {
-      if (!ready) {
-        myRepos = (
-          <span className="custom-loading is-loading">
-            <SyncIcon className="icon-spin" />
-            {' Loading List of Repositories...'}
-          </span>
-        )
-      } else {
-        myRepos = <div>Didn't find any repos</div>
-      }
+      myRepos = <div>Didn't find any repos</div>
     }
 
     let viewBoard = null
@@ -354,7 +344,7 @@ class DashboardShell extends React.Component {
         <BS.Button
           className="pull-right"
           bsStyle="primary"
-          href={'/#' + repoLink}
+          href={`/#${repoLink}`}
         >
           Continue
         </BS.Button>
@@ -369,6 +359,7 @@ class DashboardShell extends React.Component {
 
     return (
       <BS.Grid className="add-project">
+        <AppNav params={this.props.params} />
         <BS.Row>
           <h1>Create a Project</h1>
           <p>
@@ -390,7 +381,6 @@ class DashboardShell extends React.Component {
             show={this.state.showModal}
             container={this}
             onHide={this.onHide}
-            dispatch={this.props.dispatch}
           />
         </BS.Row>
       </BS.Grid>
@@ -398,9 +388,7 @@ class DashboardShell extends React.Component {
   }
 }
 
-export default connect(state => {
-  return {
-    ready: state.user.ready,
-    user: state.user.info,
-  }
-})(DashboardShell)
+export default connect(state => ({
+  ready: state.user.ready,
+  user: state.user.info,
+}))(DashboardShell)

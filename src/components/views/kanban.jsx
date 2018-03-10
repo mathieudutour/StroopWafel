@@ -14,71 +14,64 @@ import IssueList from '../issue-list'
 import Issue from '../issue'
 import AnonymousModal from '../anonymous-modal'
 import { Timer } from '../time'
+import AppNav from '../app/nav'
 
 let showedWarning = false
 
-const filterKanbanLabels = labels => {
-  return labels
-    .filter(label => KANBAN_LABEL.test(label.name))
-    .sort(sortByColumnName())
+const filterKanbanLabels = labels =>
+  labels.filter(label => KANBAN_LABEL.test(label.name)).sort(sortByColumnName())
+
+const KanbanColumn = ({ label, cards, primaryRepo, filters, settings }) => {
+  const issueComponents = cards.map(card => (
+    <Issue
+      key={card.issue.id}
+      settings={settings}
+      filters={filters}
+      primaryRepoName={primaryRepo.repoName}
+      card={card}
+    />
+  ))
+
+  let heading
+  if (label) {
+    let { name } = label
+    if (KANBAN_LABEL.test(label.name)) {
+      name = label.name.replace(/^\d+ - /, ' ')
+    }
+    heading = (
+      <Link
+        className="label-title"
+        to={filters.toggleColumnLabel(label.name).url()}
+      >
+        {name}
+      </Link>
+    )
+  } else {
+    heading = 'Uncategorized'
+  }
+
+  return (
+    <div className="kanban-board-column">
+      <IssueList title={heading} label={label}>
+        {issueComponents}
+      </IssueList>
+    </div>
+  )
 }
 
-class KanbanColumn extends React.Component {
-  render() {
-    const { label, cards, primaryRepo, filters, settings } = this.props
-
-    const issueComponents = cards.map(card => {
-      return (
-        <Issue
-          key={card.issue.id}
-          settings={settings}
-          filters={filters}
-          primaryRepoName={primaryRepo.repoName}
-          card={card}
-        />
-      )
-    })
-
-    let heading
-    if (label) {
-      let name
-      if (KANBAN_LABEL.test(label.name)) {
-        name = label.name.replace(/^\d+ - /, ' ')
-      } else {
-        name = label.name
-      }
-      heading = (
-        <Link
-          className="label-title"
-          to={filters.toggleColumnLabel(label.name).url()}
-        >
-          {name}
-        </Link>
-      )
-    } else {
-      heading = 'Uncategorized'
-    }
-
-    return (
-      <div className="kanban-board-column">
-        <IssueList title={heading} label={label}>
-          {issueComponents}
-        </IssueList>
-      </div>
-    )
-  }
+function fetchStuff(repoInfos, dispatch) {
+  // Get the "Primary" repo for milestones and labels
+  const [{ repoOwner, repoName }] = repoInfos
+  dispatch(fetchLabels(repoOwner, repoName))
+  dispatch(fetchIssues(repoInfos))
 }
 
 class KanbanRepo extends React.Component {
   componentWillMount() {
     const { repoInfos, dispatch } = this.props
-    this.fetchAction = this.fetchStuff.bind(this, repoInfos, dispatch)
+    this.fetchAction = fetchStuff.bind(this, repoInfos, dispatch)
     this.fetchAction()
     Timer.onTick(this.fetchAction)
-  }
-
-  componentWillUnmount() {
-    Timer.offTick(this.fetchAction)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -87,7 +80,7 @@ class KanbanRepo extends React.Component {
       !isDeepEqual(nextProps.filter, this.props.filter)
     ) {
       Timer.offTick(this.fetchAction)
-      this.fetchAction = this.fetchStuff.bind(
+      this.fetchAction = fetchStuff.bind(
         this,
         nextProps.repoInfos,
         nextProps.dispatch
@@ -97,11 +90,8 @@ class KanbanRepo extends React.Component {
     }
   }
 
-  fetchStuff(repoInfos, dispatch) {
-    // Get the "Primary" repo for milestones and labels
-    const [{ repoOwner, repoName }] = repoInfos
-    dispatch(fetchLabels(repoOwner, repoName))
-    dispatch(fetchIssues(repoInfos))
+  componentWillUnmount() {
+    Timer.offTick(this.fetchAction)
   }
 
   render() {
@@ -113,6 +103,7 @@ class KanbanRepo extends React.Component {
       filters,
       filter,
       fetchingIssues,
+      params,
     } = this.props
 
     // Get the primary repo
@@ -174,6 +165,7 @@ class KanbanRepo extends React.Component {
 
     return (
       <div className="kanban-board">
+        <AppNav params={params} />
         {kanbanColumns}
         {/* addCardList */}
         <AnonymousModal />

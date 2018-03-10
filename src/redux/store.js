@@ -17,7 +17,7 @@ import githubMiddleware from './middlewares/github'
 
 import reducers from './reducers'
 
-let reducer = optimist(
+const reducer = optimist(
   combineReducers({
     routing,
     ...reducers,
@@ -34,7 +34,7 @@ let _middlewares = [
 ]
 
 if (process.env.NODE_ENV !== 'production') {
-  const { createLogger } = require('redux-logger')
+  const { createLogger } = require('redux-logger') // eslint-disable-line
   _middlewares.push(
     createLogger({
       collapsed: true,

@@ -1,9 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { GraphIcon } from 'react-octicons'
+import moment from 'moment'
 
 import Chart from './chart'
-import moment from 'moment'
+import AppNav from '../../app/nav'
 
 function getDay(dateStr) {
   return Math.floor(Date.parse(dateStr) / 1000 / 60 / 60 / 24)
@@ -28,9 +29,8 @@ class BurnupShell extends React.Component {
       } else if (chunkType === 'year') {
         const d = new Date(dateStr)
         return d.getFullYear()
-      } else {
-        throw new Error('BUG: Invalid date range chunk type')
       }
+      throw new Error('BUG: Invalid date range chunk type')
     }
     function formatChunk(chunk) {
       if (chunkType === 'day') {
@@ -43,14 +43,12 @@ class BurnupShell extends React.Component {
         if (month === 0) {
           const year = (chunk / 100) % 100 // only use the last 2 digits of the year
           return `${moment.monthsShort(month)} '${year}` // moment months are 0-indexed
-        } else {
-          return moment.monthsShort(month) // moment months are 0-indexed
         }
+        return moment.monthsShort(month) // moment months are 0-indexed
       } else if (chunkType === 'year') {
         return chunk
-      } else {
-        throw new Error('BUG: Invalid date range chunk type')
       }
+      throw new Error('BUG: Invalid date range chunk type')
     }
     function incrementChunk(chunk) {
       if (chunkType === 'day') {
@@ -61,28 +59,26 @@ class BurnupShell extends React.Component {
         const month = chunk % 100 // split off the year
         if (month >= 12) {
           return chunk - month + 100
-        } else {
-          return chunk + 1
         }
+        return chunk + 1
       } else if (chunkType === 'year') {
         return chunk + 1
-      } else {
-        throw new Error('BUG: Invalid date range chunk type')
       }
+      throw new Error('BUG: Invalid date range chunk type')
     }
 
     if (!cards.length) {
       return <span>Not showing a chart because there are 0 cards to show</span>
     }
 
-    cards = cards.sort(sortByDate('createdAt'))
+    cards.sort(sortByDate('createdAt'))
     // Get the oldest Issue and the newest Issue Date
     const startDate = cards[0].issue.createdAt
 
-    let openedCards = cards
+    const openedCards = cards
 
     // From this point, we only care about closed Issues
-    let closedCards = cards
+    const closedCards = cards
       .filter(card => card.issue.closedAt)
       .sort(sortByDate('closedAt'))
     let endDate
@@ -131,18 +127,18 @@ class BurnupShell extends React.Component {
       // loop through the cards to count how many have closed on this day
       let closedToday = 0
       let openedToday = 0
-      for (let cardIndex = 0; cardIndex < closedCards.length; cardIndex++) {
+      for (let cardIndex = 0; cardIndex < closedCards.length; cardIndex += 1) {
         const cardClosedDay = getChunk(closedCards[cardIndex].issue.closedAt)
         if (cardClosedDay <= currentChunk) {
-          closedToday++
+          closedToday += 1
         } else {
           break
         }
       }
-      for (let cardIndex = 0; cardIndex < openedCards.length; cardIndex++) {
+      for (let cardIndex = 0; cardIndex < openedCards.length; cardIndex += 1) {
         const cardOpenedDay = getChunk(openedCards[cardIndex].issue.createdAt)
         if (cardOpenedDay <= currentChunk) {
-          openedToday++
+          openedToday += 1
         } else {
           break
         }
@@ -178,7 +174,7 @@ class BurnupShell extends React.Component {
 
     const chartData = {
       x: 'chunk',
-      rows: rows,
+      rows,
       colors: {
         closed: '#ff0000',
         total: '#00ff00',
@@ -234,6 +230,7 @@ class BurnupShell extends React.Component {
   render() {
     return (
       <div className="burnup">
+        <AppNav params={this.props.params} />
         <h2>
           <GraphIcon size="mega" /> Burnup Chart
         </h2>
@@ -253,8 +250,6 @@ class BurnupShell extends React.Component {
   }
 }
 
-export default connect(state => {
-  return {
-    cards: state.issues.cards,
-  }
-})(BurnupShell)
+export default connect(state => ({
+  cards: state.issues.cards,
+}))(BurnupShell)

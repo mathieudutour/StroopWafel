@@ -17,21 +17,20 @@ const cacheHandler = new CacheHandler()
 
 const FetchOnePlugin = {
   asyncVerbs: {
-    fetchOne: function(requester, path) {
-      return function(cb, query) {
-        return requester.request(
+    fetchOne(requester, path) {
+      return (cb, query) =>
+        requester.request(
           'GET',
           `${path}${toQueryString(query)}`,
           null,
           null,
-          function(err, result) {
+          (err, result) => {
             if (err) {
               return cb(err)
             }
             return cb(null, result.items)
           }
         )
-      }
     },
   },
 }
@@ -52,10 +51,7 @@ export default class GithubClient extends EventEmitter {
   }
   // Used for checking if we should retreive ALL Issues or just open ones
   canCacheLots() {
-    return this.hasCredentials() /*&& !!cacheHandler._db*/
-  }
-  _dbPromise() {
-    return cacheHandler.dbPromise
+    return this.hasCredentials() /* && !!cacheHandler._db */
   }
   _getOctoConfig() {
     return {
@@ -79,7 +75,7 @@ export default class GithubClient extends EventEmitter {
     return !!token
   }
   getOcto() {
-    return this._dbPromise().then(() => {
+    return cacheHandler.dbPromise.then(() => {
       if (!cachedClient) {
         cachedClient = new Octo(this._getOctoConfig())
         // update the rateLimit for issue-duck so it can gracefully back off
@@ -91,6 +87,7 @@ export default class GithubClient extends EventEmitter {
       return cachedClient
     })
   }
+  // eslint-disable-next-line
   getAnonymousOcto() {
     return Promise.resolve(new Octo())
   }

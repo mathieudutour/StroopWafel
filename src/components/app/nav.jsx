@@ -30,29 +30,26 @@ import FilterDropdown from './filter-dropdown'
 import Logo from '../logo'
 import RepoInfos from '../repo-infos'
 
-class SettingsItem extends React.Component {
-  render() {
-    const { key, onSelect, isChecked, className, to, children } = this.props
-    let { href } = this.props
-
-    if (!href && to) {
-      href = `#${to}` // Link
-    }
-
-    return (
-      <BS.MenuItem
-        key={key}
-        href={href}
-        onSelect={onSelect}
-        className={className}
-      >
-        <span className="settings-item-checkbox" data-checked={isChecked}>
-          {children}
-        </span>
-      </BS.MenuItem>
-    )
-  }
-}
+const SettingsItem = ({
+  key,
+  onSelect,
+  isChecked,
+  className,
+  to,
+  children,
+  href,
+}) => (
+  <BS.MenuItem
+    key={key}
+    href={href || `#${to}`}
+    onSelect={onSelect}
+    className={className}
+  >
+    <span className="settings-item-checkbox" data-checked={isChecked}>
+      {children}
+    </span>
+  </BS.MenuItem>
+)
 
 class AppNav extends React.Component {
   static propTypes = {
@@ -82,7 +79,7 @@ class AppNav extends React.Component {
   }
 
   render() {
-    let { userInfo, repoInfos, settings, filters, LABEL_CACHE } = this.props
+    const { userInfo, repoInfos, settings, filters, LABEL_CACHE } = this.props
     const { showModal } = this.state
     const { username, labels } = filters.getState()
 
@@ -90,7 +87,7 @@ class AppNav extends React.Component {
     const close = () => this.setState({ showModal: false })
 
     const brand = (
-      <Link to={'/'}>
+      <Link to="/">
         <Logo />
       </Link>
     )
@@ -125,16 +122,15 @@ class AppNav extends React.Component {
     let loginButton
     if (userInfo) {
       const settingsMenuHelp = () => {
-        /*eslint-disable no-alert */
+        // eslint-disable-next-line no-alert
         alert(
           'When an Issue and Pull Request are linked (by writing "fixes #123" in the Pull Request description) the related Issue/Pull request is removed from the list.\n Developers will probably want to see the Pull Request in their board (since they created it) while QA would probably rather see the Issue (since they created it).'
         )
-        /*eslint-enable no-alert */
       }
 
       const avatarImage = (
         <img
-          alt={'@' + userInfo.login}
+          alt={`@${userInfo.login}`}
           className="avatar-image"
           src={userInfo.avatarUrl}
         />

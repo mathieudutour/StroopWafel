@@ -7,46 +7,41 @@ import { filterCards, filterByUsers } from '../../redux/ducks/utils/filterCards'
 import { fetchIssues } from '../../redux/ducks/issue'
 import IssueList from '../issue-list'
 import Issue from '../issue'
+import AppNav from '../app/nav'
 
-class KanbanColumn extends React.Component {
-  render() {
-    const { user, cards, primaryRepoName, filters, settings } = this.props
+const KanbanColumn = ({ user, cards, primaryRepoName, filters, settings }) => {
+  const issueComponents = cards.map(card => (
+    <Issue
+      key={card.key()}
+      settings={settings}
+      filters={filters}
+      primaryRepoName={primaryRepoName}
+      card={card}
+      oldUser={user}
+    />
+  ))
 
-    const issueComponents = cards.map(card => {
-      return (
-        <Issue
-          key={card.key()}
-          settings={settings}
-          filters={filters}
-          primaryRepoName={primaryRepoName}
-          card={card}
-          oldUser={user}
-        />
-      )
-    })
-
-    let heading
-    if (user) {
-      heading = (
-        <Link
-          className="user-title"
-          to={this.props.filters.toggleUsername(user.login).url()}
-        >
-          {user.login}
-        </Link>
-      )
-    } else {
-      heading = 'No Assignee'
-    }
-
-    return (
-      <div className="kanban-board-column">
-        <IssueList title={heading} user={user}>
-          {issueComponents}
-        </IssueList>
-      </div>
+  let heading
+  if (user) {
+    heading = (
+      <Link
+        className="user-title"
+        to={this.props.filters.toggleUsername(user.login).url()}
+      >
+        {user.login}
+      </Link>
     )
+  } else {
+    heading = 'No Assignee'
   }
+
+  return (
+    <div className="kanban-board-column">
+      <IssueList title={heading} user={user}>
+        {issueComponents}
+      </IssueList>
+    </div>
+  )
 }
 
 class UsersView extends React.Component {
@@ -56,7 +51,7 @@ class UsersView extends React.Component {
   }
 
   render() {
-    const { repoInfos, cards, filters, settings, filter } = this.props
+    const { repoInfos, cards, filters, settings, filter, params } = this.props
     const [{ repoName }] = repoInfos // primaryRepoName
 
     const logins = {}
@@ -108,7 +103,12 @@ class UsersView extends React.Component {
       )
     })
 
-    return <div className="kanban-board">{kanbanColumns}</div>
+    return (
+      <div className="kanban-board">
+        <AppNav params={params} />
+        {kanbanColumns}
+      </div>
+    )
   }
 }
 

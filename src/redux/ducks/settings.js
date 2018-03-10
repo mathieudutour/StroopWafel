@@ -108,11 +108,9 @@ export const toggleShowPullRequestData = duck.defineAction(
   }
 )
 
-duck.addReducerCase(resolve(LOGIN), state => {
-  return {
-    ...state,
-    showPullRequestData: true,
-  }
-})
+duck.addReducerCase(resolve(LOGIN), state => ({
+  ...state,
+  showPullRequestData: true,
+}))
 
 export default duck.reducer

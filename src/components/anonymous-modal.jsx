@@ -6,6 +6,8 @@ import { GearIcon } from 'react-octicons'
 let hasAlreadyShownAnonymousModal = false
 
 class AnonymousModal extends React.Component {
+  state = { showModal: true }
+
   render() {
     const onHide = () => {
       hasAlreadyShownAnonymousModal = true
@@ -15,7 +17,7 @@ class AnonymousModal extends React.Component {
     if (this.props.token) {
       showModal = false
     } else {
-      showModal = !hasAlreadyShownAnonymousModal
+      showModal = !hasAlreadyShownAnonymousModal && this.state.showModal
     }
 
     return (

@@ -63,7 +63,7 @@ export default class extends React.Component {
 
     let kids
     disabled = disabled || false
-    let classes = { 'async-button': true }
+    const classes = { 'async-button': true }
     if (className) {
       classes[className] = true
     }

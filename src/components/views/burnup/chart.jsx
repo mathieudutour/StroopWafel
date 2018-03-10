@@ -19,7 +19,9 @@ class ChartComponent extends React.Component {
     options: PropTypes.object,
   }
 
-  chart = null
+  componentDidMount() {
+    this._generateChart(this.props.data, this.props.element, this.props.options)
+  }
 
   shouldComponentUpdate(nextProps) {
     if (this.props.data.rows.length !== nextProps.data.rows.length) {
@@ -33,10 +35,6 @@ class ChartComponent extends React.Component {
       return true
     }
     return false
-  }
-
-  componentDidMount() {
-    this._generateChart(this.props.data, this.props.element, this.props.options)
   }
 
   componentDidUpdate(prevProps) {
@@ -53,12 +51,14 @@ class ChartComponent extends React.Component {
     this._destroyChart()
   }
 
+  chart = null
+
   _generateChart = (data, element, options) => {
-    let build = Object.assign(
+    const build = Object.assign(
       {},
       {
-        bindto: '#' + element,
-        data: data,
+        bindto: `#${element}`,
+        data,
       },
       options
     )
@@ -72,7 +72,7 @@ class ChartComponent extends React.Component {
   render() {
     let className
     if (this.props.className) {
-      className = 'c3 ' + this.props.className
+      className = `c3 ${this.props.className}`
     } else {
       className = 'c3'
     }

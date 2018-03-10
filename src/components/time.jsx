@@ -6,11 +6,9 @@ const RELOAD_TIME_SHORT = 20 * 1000
 const RELOAD_TIME_LONG = 5 * 60 * 1000
 
 export const Timer = new class Store extends EventEmitter {
-  off() {
+  off(...args) {
     // EventEmitter has `.on` but no matching `.off`
-    const slice = [].slice
-    const args = arguments.length >= 1 ? slice.call(arguments, 0) : []
-    return this.removeListener.apply(this, args)
+    return this.removeListener(...args)
   }
   onTick(listener) {
     this.on('tick', listener)

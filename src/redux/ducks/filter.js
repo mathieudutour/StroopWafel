@@ -13,9 +13,8 @@ const duck = new Duck('@@router', initialState)
 function parseArray(x) {
   if (Array.isArray(x)) {
     return x
-  } else {
-    return [x]
   }
+  return [x]
 }
 
 export const goTo = duck.defineAction(CALL_HISTORY_METHOD, {

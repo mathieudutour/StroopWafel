@@ -16,17 +16,13 @@ function emptyFilter() {
   }
 }
 
-function _getLabelsRemoved(newLabels, oldLabels) {
-  oldLabels = oldLabels ? oldLabels.labels : []
-  oldLabels = oldLabels || []
+function _getLabelsRemoved(newLabels, { labels: oldLabels = [] } = {}) {
   const newLabelNames = newLabels.map(({ name }) => name).sort()
   const oldLabelNames = oldLabels.map(({ name }) => name).sort()
   return _.difference(oldLabelNames, newLabelNames)
 }
 
-function _getDidLabelsChange(newLabels, oldLabels) {
-  oldLabels = oldLabels ? oldLabels.labels : []
-  oldLabels = oldLabels || []
+function _getDidLabelsChange(newLabels, { labels: oldLabels = [] } = {}) {
   const newLabelNames = newLabels.map(({ name }) => name)
   const oldLabelNames = oldLabels.map(({ name }) => name)
   return (
@@ -56,13 +52,13 @@ function _fetchLastSeenUpdatesForRepo(
     .getOcto()
     .then(({ repos }) => repos(repoOwner, repoName).issues[method](opts))
     .then(result => {
-      let items = Array.isArray(result) ? result : result.items
+      const items = Array.isArray(result) ? result : result.items
       // If a repository has 0 events it probably has not changed in a while
       // or never had any commits. Do not keep trying to fetch all the Issues though
       // so set the lastSeenAt to be something non-zero
       // since `null` means stroopwafel has not fetched all the Issues before.
       const newLastSeenAt = items.length ? items[0].updatedAt : null
-      let cards = items.reduce((prev, issue) => {
+      const cards = items.reduce((prev, issue) => {
         if (lastSeenAt === issue.updatedAt) {
           // If this Issue was updated at the same time then ignore it
           // TODO: this is a bit imprecise. maybe it's safer to not exclude it this way
@@ -113,9 +109,9 @@ function _fetchUpdatesForRepo(githubClient, repo) {
 
     // find all the Issues that have labels that have been removed so we can update them
     return Database.fetchCards(emptyFilter(), [{ repoOwner, repoName }])
-      .then(cards => {
-        return cards.filter(card => {
-          return labelsRemoved.some(label => {
+      .then(cards =>
+        cards.filter(card =>
+          labelsRemoved.some(label => {
             const filter = emptyFilter()
             if (KANBAN_LABEL.test(label)) {
               filter.columnLabels.push(label)
@@ -124,8 +120,8 @@ function _fetchUpdatesForRepo(githubClient, repo) {
             }
             return filterCard(card, filter, [{ repoOwner, repoName }])
           })
-        })
-      })
+        )
+      )
       .then(cardsArrays => {
         const cards = _.unique(_.flatten(cardsArrays))
         // Re-fetch each Issue
@@ -135,19 +131,17 @@ function _fetchUpdatesForRepo(githubClient, repo) {
           )
         )
       })
-      .then(cards => {
-        return Database.putCards(cards)
-      })
-      .then(() => {
+      .then(cards => Database.putCards(cards))
+      .then(() =>
         // Update the list of labels now that all the Issues have been updated
-        return Database.putRepoLabels(repoOwner, repoName, newLabels)
-      })
-      .then(() => {
+        Database.putRepoLabels(repoOwner, repoName, newLabels)
+      )
+      .then(() =>
         // FINALLY, actually fetch the updates
-        return Database.getRepoOrNull(repoOwner, repoName).then(_repo => {
+        Database.getRepoOrNull(repoOwner, repoName).then(_repo => {
           let lastSeenAt
           if (_repo && _repo.lastSeenAt) {
-            lastSeenAt = _repo.lastSeenAt
+            lastSeenAt = _repo.lastSeenAt // eslint-disable-line
           }
           return _fetchLastSeenUpdatesForRepo(
             githubClient,
@@ -158,7 +152,7 @@ function _fetchUpdatesForRepo(githubClient, repo) {
             _getDidLabelsChange(newLabels, oldLabels)
           )
         })
-      })
+      )
   })
 }
 
@@ -175,30 +169,31 @@ export default function fetchIssues(githubClient, filter, repoInfos, dispatch) {
 
   return githubClient
     .getOcto()
-    .then(client => {
-      return Promise.all(
-        repoInfos.map(({ repoOwner, repoName }) => {
-          return client
+    .then(client =>
+      Promise.all(
+        repoInfos.map(({ repoOwner, repoName }) =>
+          client
             .repos(repoOwner, repoName)
             .fetch()
-            .then(repo => {
-              return _fetchUpdatesForRepo(githubClient, repo)
-            })
-        })
+            .then(repo => _fetchUpdatesForRepo(githubClient, repo))
+        )
       )
-    })
+    )
     .then(repoAndCardsUpdate => {
-      const repoAndCards = _.flatten(repoAndCardsUpdate, true /*shallow*/) // the asterisks in the URL become an array of repoAndCards so we need to flatten
+      const repoAndCards = _.flatten(repoAndCardsUpdate, true /* shallow */) // the asterisks in the URL become an array of repoAndCards so we need to flatten
       const repos = repoAndCards
         .map(({ repository }) => repository)
         .filter(v => !!v)
       // if the lastSeenAt did not change then repository field will be missing
-      const cards = _.flatten(repoAndCards.map(x => x.cards), true /*shallow*/)
+      const cards = _.flatten(
+        repoAndCards.map(x => x.cards),
+        true /* shallow */
+      )
       // didLabelsChange is true if at least one of the repos labels changed
       const didLabelsChange =
         _.flatten(
           repoAndCards.map(x => x.didLabelsChange),
-          true /*shallow*/
+          true /* shallow */
         ).indexOf(true) >= 0
 
       // Save the cards

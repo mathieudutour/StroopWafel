@@ -9,7 +9,7 @@ class AddFilterModal extends React.Component {
     const { onHide } = this.props
     const data = JSON.parse(window.localStorage[LOCALSTORAGE_KEY] || '[]')
     const title = this._title.value
-    data.push({ title: title, hashStr: window.location.hash })
+    data.push({ title, hashStr: window.location.hash })
     window.localStorage[LOCALSTORAGE_KEY] = JSON.stringify(data)
     onHide()
   }
@@ -25,7 +25,9 @@ class AddFilterModal extends React.Component {
         <BS.Modal.Body>
           <BS.FormControl
             type="text"
-            inputRef={r => (this._title = r)}
+            inputRef={r => {
+              this._title = r
+            }}
             placeholder="Name of the filter..."
           />
         </BS.Modal.Body>
@@ -70,13 +72,11 @@ class SavedFiltersButton extends React.Component {
             {savedFilterData.length <= 0 && (
               <BS.MenuItem>No filter saved yet</BS.MenuItem>
             )}
-            {savedFilterData.map(({ title, hashStr }) => {
-              return (
-                <BS.MenuItem key={hashStr} href={hashStr}>
-                  {title}
-                </BS.MenuItem>
-              )
-            })}
+            {savedFilterData.map(({ title, hashStr }) => (
+              <BS.MenuItem key={hashStr} href={hashStr}>
+                {title}
+              </BS.MenuItem>
+            ))}
           </BS.Dropdown.Menu>
         </BS.Dropdown>
         <AddFilterModal show={showModal} onHide={this.hideAddFilter} />

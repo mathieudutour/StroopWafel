@@ -1,3 +1,4 @@
+/* eslint-disable prefer-template */
 let duck
 
 duck = 'settings.'

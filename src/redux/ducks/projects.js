@@ -21,8 +21,6 @@ duck.addReducerCase(FETCH_ISSUES, (state, { payload }) => {
   }
 })
 
-duck.addReducerCase(LOGOUT, () => {
-  return DEFAULT_STATE
-})
+duck.addReducerCase(LOGOUT, () => DEFAULT_STATE)
 
 export default duck.reducer

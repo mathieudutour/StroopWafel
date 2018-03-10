@@ -30,17 +30,6 @@ export default function(milestoneCount) {
     return d.startDate + d.taskName + d.endDate
   }
 
-  function rectTransformSegment({ task, total, prev }) {
-    const percent = prev / total
-    return (
-      'translate(' +
-      (x(task.startDate) + percent * (x(task.endDate) - x(task.startDate))) +
-      ',' +
-      y(task.taskName) +
-      ')'
-    )
-  }
-
   let x = d3.time
     .scale()
     .domain([timeDomainStart, timeDomainEnd])
@@ -51,6 +40,12 @@ export default function(milestoneCount) {
     .ordinal()
     .domain(taskTypes)
     .rangeRoundBands([0, height - margin.top - margin.bottom], 0.1)
+
+  function rectTransformSegment({ task, total, prev }) {
+    const percent = prev / total
+    return `translate(${x(task.startDate) +
+      percent * (x(task.endDate) - x(task.startDate))},${y(task.taskName)})`
+  }
 
   let xAxis = d3.svg
     .axis()
@@ -74,13 +69,9 @@ export default function(milestoneCount) {
         timeDomainEnd = d3.time.hour.offset(new Date(), +3)
         return
       }
-      tasks = tasks.sort(function(a, b) {
-        return a.endDate - b.endDate
-      })
+      tasks.sort((a, b) => a.endDate - b.endDate)
       timeDomainEnd = tasks[tasks.length - 1].endDate
-      tasks = tasks.sort(function(a, b) {
-        return a.startDate - b.startDate
-      })
+      tasks.sort((a, b) => a.startDate - b.startDate)
       timeDomainStart = tasks[0].startDate
     }
   }
@@ -125,7 +116,7 @@ export default function(milestoneCount) {
       .attr('class', 'gantt-chart')
       .attr('width', width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom)
-      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`)
 
     const PHIL = svg.selectAll('.chart')
 
@@ -163,24 +154,21 @@ export default function(milestoneCount) {
     svg
       .append('g')
       .attr('class', 'x axis')
-      .attr(
-        'transform',
-        'translate(0, ' + (height - margin.top - margin.bottom) + ')'
-      )
+      .attr('transform', `translate(0, ${height - margin.top - margin.bottom})`)
       .transition()
       .call(xAxis)
 
     svg
       .append('g')
       .attr('class', 'y axis')
-      .attr('transform', 'translate(-' + margin.left + ',0)')
+      .attr('transform', `translate(-${margin.left}, 0)`)
       .transition()
       .call(yAxis)
 
     return gantt
   }
 
-  gantt.redraw = function(tasks) {
+  gantt.redraw = tasks => {
     initTimeDomain(tasks)
     initAxis()
 
@@ -231,15 +219,18 @@ export default function(milestoneCount) {
     return gantt
   }
 
-  gantt.margin = function(value) {
+  gantt.margin = value => {
     if (!arguments.length) return margin
     margin = value
     return gantt
   }
 
-  gantt.timeDomain = function(value) {
-    if (!arguments.length) return [timeDomainStart, timeDomainEnd]
-    ;(timeDomainStart = +value[0]), (timeDomainEnd = +value[1])
+  gantt.timeDomain = value => {
+    if (!arguments.length) {
+      return [timeDomainStart, timeDomainEnd]
+    }
+    timeDomainStart = +value[0]
+    timeDomainEnd = +value[1]
     return gantt
   }
 
@@ -248,43 +239,43 @@ export default function(milestoneCount) {
    *                value The value can be "fit" - the domain fits the data or
    *                "fixed" - fixed domain.
    */
-  gantt.timeDomainMode = function(value) {
+  gantt.timeDomainMode = value => {
     if (!arguments.length) return timeDomainMode
     timeDomainMode = value
     return gantt
   }
 
-  gantt.taskTypes = function(value) {
+  gantt.taskTypes = value => {
     if (!arguments.length) return taskTypes
     taskTypes = value
     return gantt
   }
 
-  gantt.taskStatus = function(value) {
+  gantt.taskStatus = value => {
     if (!arguments.length) return taskStatus
     taskStatus = value
     return gantt
   }
 
-  gantt.width = function(value) {
+  gantt.width = value => {
     if (!arguments.length) return width
     width = +value
     return gantt
   }
 
-  gantt.height = function(value) {
+  gantt.height = value => {
     if (!arguments.length) return height
     height = +value
     return gantt
   }
 
-  gantt.tickFormat = function(value) {
+  gantt.tickFormat = value => {
     if (!arguments.length) return tickFormat
     tickFormat = value
     return gantt
   }
 
-  gantt.selector = function(value) {
+  gantt.selector = value => {
     if (!arguments.length) return selector
     selector = value
     return gantt

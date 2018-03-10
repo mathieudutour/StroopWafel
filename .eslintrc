@@ -1,13 +1,7 @@
 {
   "parser": "babel-eslint",
-  "plugins": ["react", "duck", "import", "prettier"],
-  "extends": [
-    "eslint:recommended",
-    "react:recommended",
-    "plugin:duck/recommended",
-    "plugin:import/recommended",
-    "prettier"
-  ],
+  "extends": ["airbnb", "plugin:duck/recommended", "prettier"],
+  "plugins": ["prettier"],
   "env": {
     "es6": true,
     "browser": true,
@@ -17,15 +11,14 @@
     "import/resolver": "webpack"
   },
   "rules": {
+    "no-underscore-dangle": 0,
     "no-alert": 1,
-    "no-unused-vars": 2,
-    "react/jsx-uses-vars": 1,
-    "no-var": 2,
     "new-cap": 0,
     "no-console": 1,
-    "no-undef": 2,
-    "no-shadow": 2,
     "import/unambiguous": 0,
+    "react/no-multi-comp": 0,
+    "react/no-unescaped-entities": 0,
+    "react/prop-types": 0,
     "duck/meta-validation": [
       2,
       [

@@ -10,9 +10,6 @@ import {
   ChecklistIcon,
   CommentIcon,
   AlertIcon,
-  CheckIcon,
-  PrimitiveDotIcon,
-  XIcon,
 } from 'react-octicons'
 
 import { tryToMoveIssue } from '../redux/ducks/issue'
@@ -57,7 +54,7 @@ const issueSource = {
         tryToMoveIssue({
           card,
           user: dropResult.user,
-          oldUser: oldUser,
+          oldUser,
         })
       )
     } else {
@@ -100,9 +97,10 @@ class IssueSimple extends React.Component {
           className="avatar-filter"
         >
           <img
+            alt={user.login}
             key="avatar"
             className="avatar-image"
-            title={'Click to filter on ' + user.login}
+            title={`Click to filter on ${user.login}`}
             src={user.avatarUrl}
           />
         </Link>
@@ -171,30 +169,27 @@ class IssueSimple extends React.Component {
   }
 }
 
-class CardDetailsModal extends React.Component {
-  render() {
-    const { card, ...rest } = this.props
-    const { issue, repoOwner, repoName } = card
-    return (
-      <BS.Modal className="-add-filter-modal" {...rest}>
-        <BS.Modal.Header closeButton>
-          <BS.Modal.Title>
-            <a href={issue.htmlUrl}>
-              <span>#{issue.number} </span>
-              {issue.title}
-            </a>
-          </BS.Modal.Title>
-        </BS.Modal.Header>
-        <BS.Modal.Body>
-          <GithubFlavoredMarkdown
-            repoOwner={repoOwner}
-            repoName={repoName}
-            text={issue.body}
-          />
-        </BS.Modal.Body>
-      </BS.Modal>
-    )
-  }
+const CardDetailsModal = ({ card, ...rest }) => {
+  const { issue, repoOwner, repoName } = card
+  return (
+    <BS.Modal className="-add-filter-modal" {...rest}>
+      <BS.Modal.Header closeButton>
+        <BS.Modal.Title>
+          <a href={issue.htmlUrl}>
+            <span>#{issue.number} </span>
+            {issue.title}
+          </a>
+        </BS.Modal.Title>
+      </BS.Modal.Header>
+      <BS.Modal.Body>
+        <GithubFlavoredMarkdown
+          repoOwner={repoOwner}
+          repoName={repoName}
+          text={issue.body}
+        />
+      </BS.Modal.Body>
+    </BS.Modal>
+  )
 }
 
 class IssueCard extends React.Component {
@@ -203,6 +198,35 @@ class IssueCard extends React.Component {
     this.state = {
       showDetails: false,
     }
+  }
+
+  showDetails = e => {
+    let { target } = e
+    while (target) {
+      if (
+        target.attributes &&
+        target.attributes.role &&
+        target.attributes.role.textContent === 'dialog'
+      ) {
+        // if we click on the modal, bail out
+        return
+      }
+      if (target.nodeName === 'A') {
+        // if we click on a link, bail out
+        return
+      }
+      // otherwise climb up the tree
+      target = target.parentNode
+    }
+    this.setState({
+      showDetails: true,
+    })
+  }
+
+  hideDetails = () => {
+    this.setState({
+      showDetails: false,
+    })
   }
 
   render() {
@@ -226,17 +250,18 @@ class IssueCard extends React.Component {
       return (
         <Link key={link} to={link} className="pull-right">
           <img
+            alt={user.login}
             className="avatar-image"
-            title={'Click to filter on ' + user.login}
+            title={`Click to filter on ${user.login}`}
             src={user.avatarUrl}
           />
         </Link>
       )
     })
 
-    const nonKanbanLabels = (issue.labels || []).filter(label => {
-      return !KANBAN_LABEL.test(label.name)
-    })
+    const nonKanbanLabels = (issue.labels || []).filter(
+      label => !KANBAN_LABEL.test(label.name)
+    )
     const labels = nonKanbanLabels.map(label => {
       const tooltip = (
         <BS.Tooltip id={`tooltip-${card.key()}-${label.name}`}>
@@ -286,7 +311,7 @@ class IssueCard extends React.Component {
           <h4>
             <GithubFlavoredMarkdown
               inline
-              disableLinks={true}
+              disableLinks
               repoOwner={repoOwner}
               repoName={repoName}
               text={issue.milestone.title}
@@ -301,7 +326,7 @@ class IssueCard extends React.Component {
             {openCount} Open / {closedCount} Closed
           </p>
           <GithubFlavoredMarkdown
-            disableLinks={true}
+            disableLinks
             repoOwner={repoOwner}
             repoName={repoName}
             text={issue.milestone.description}
@@ -322,7 +347,7 @@ class IssueCard extends React.Component {
             >
               <GithubFlavoredMarkdown
                 inline
-                disableLinks={true}
+                disableLinks
                 repoOwner={repoOwner}
                 repoName={repoName}
                 text={issue.milestone.title}
@@ -462,7 +487,11 @@ class IssueCard extends React.Component {
     let featuredImage
     if (card.getFeaturedImageSrc()) {
       featuredImage = (
-        <img className="featured-image" src={card.getFeaturedImageSrc()} />
+        <img
+          className="featured-image"
+          alt="Featured"
+          src={card.getFeaturedImageSrc()}
+        />
       )
     }
 
@@ -512,35 +541,6 @@ class IssueCard extends React.Component {
       </BS.Panel>
     )
   }
-
-  showDetails = e => {
-    let target = e.target
-    while (target) {
-      if (
-        target.attributes &&
-        target.attributes.role &&
-        target.attributes.role.textContent === 'dialog'
-      ) {
-        // if we click on the modal, bail out
-        return
-      }
-      if (target.nodeName === 'A') {
-        // if we click on a link, bail out
-        return
-      }
-      // otherwise climb up the tree
-      target = target.parentNode
-    }
-    this.setState({
-      showDetails: true,
-    })
-  }
-
-  hideDetails = () => {
-    this.setState({
-      showDetails: false,
-    })
-  }
 }
 
 // `GET .../issues` returns an object with `labels` and
@@ -569,6 +569,18 @@ class Issue extends React.Component {
     Timer.offTick(this.pollPullRequestStatus)
   }
 
+  onDragStart = () => {
+    // Rotate the div just long enough for the browser to get a screenshot
+    // so the element looks like it is being moved
+    const { style } = ReactDOM.findDOMNode(this) // eslint-disable-line
+    style.transform = 'scale(1.5, 1,5)'
+    style.webkitTransform = 'scale(1.5, 1,5)'
+    setTimeout(() => {
+      style.transform = ''
+      style.webkitTransform = ''
+    }, 100)
+  }
+
   pollPullRequestStatus = () => {
     const { card, settings } = this.props
     if (card.isPullRequest()) {
@@ -578,18 +590,6 @@ class Issue extends React.Component {
         })
         .then(() => this.forceUpdate())
     }
-  }
-
-  onDragStart = () => {
-    // Rotate the div just long enough for the browser to get a screenshot
-    // so the element looks like it is being moved
-    const { style } = ReactDOM.findDOMNode(this)
-    style.transform = 'rotate(5deg)'
-    style.webkitTransform = 'rotate(5deg)'
-    setTimeout(() => {
-      style.transform = ''
-      style.webkitTransform = ''
-    }, 100)
   }
 
   render() {

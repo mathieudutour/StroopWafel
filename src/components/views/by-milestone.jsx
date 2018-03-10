@@ -11,49 +11,46 @@ import {
 import IssueList from '../issue-list'
 import Issue from '../issue'
 import GithubFlavoredMarkdown from '../gfm'
+import AppNav from '../app/nav'
 
-class KanbanColumn extends React.Component {
-  render() {
-    const { milestone, cards, primaryRepoName, filters, settings } = this.props
+const KanbanColumn = ({
+  milestone,
+  cards,
+  primaryRepoName,
+  filters,
+  settings,
+}) => {
+  const issueComponents = cards.map(card => (
+    <Issue
+      key={card.key()}
+      settings={settings}
+      filters={filters}
+      primaryRepoName={primaryRepoName}
+      card={card}
+    />
+  ))
 
-    const issueComponents = cards.map(card => {
-      return (
-        <Issue
-          key={card.key()}
-          settings={settings}
-          filters={filters}
-          primaryRepoName={primaryRepoName}
-          card={card}
-        />
-      )
-    })
-
-    let heading
-    if (milestone) {
-      heading = (
-        <Link
-          className="milestone-title"
-          to={this.props.filters.toggleMilestoneTitle(milestone.title).url()}
-        >
-          <GithubFlavoredMarkdown
-            inline
-            disableLinks={true}
-            text={milestone.title}
-          />
-        </Link>
-      )
-    } else {
-      heading = 'No Milestone'
-    }
-
-    return (
-      <div className="kanban-board-column">
-        <IssueList title={heading} milestone={milestone}>
-          {issueComponents}
-        </IssueList>
-      </div>
+  let heading
+  if (milestone) {
+    heading = (
+      <Link
+        className="milestone-title"
+        to={this.props.filters.toggleMilestoneTitle(milestone.title).url()}
+      >
+        <GithubFlavoredMarkdown inline disableLinks text={milestone.title} />
+      </Link>
     )
+  } else {
+    heading = 'No Milestone'
   }
+
+  return (
+    <div className="kanban-board-column">
+      <IssueList title={heading} milestone={milestone}>
+        {issueComponents}
+      </IssueList>
+    </div>
+  )
 }
 
 class ByMilestoneView extends React.Component {
@@ -73,6 +70,7 @@ class ByMilestoneView extends React.Component {
       settings,
       filters,
       filter,
+      params,
     } = this.props
 
     // Get the primary repo
@@ -121,7 +119,12 @@ class ByMilestoneView extends React.Component {
       )
     })
 
-    return <div className="kanban-board">{kanbanColumns}</div>
+    return (
+      <div className="kanban-board">
+        <AppNav params={params} />
+        {kanbanColumns}
+      </div>
+    )
   }
 }
 

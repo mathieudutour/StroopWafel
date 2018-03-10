@@ -6,62 +6,64 @@ import { Link } from 'react-router'
 
 import { KANBAN_LABEL, isLight } from '../helpers'
 
-class LabelBadge extends React.Component {
-  static propTypes = {
-    label: PropTypes.object.isRequired,
-    className: PropTypes.string,
-    extra: PropTypes.string,
+const LabelBadge = ({
+  label,
+  isFilterLink,
+  onClick,
+  filters,
+  className = '',
+  extra,
+}) => {
+  let name = { label }
+
+  if (KANBAN_LABEL.test(label.name)) {
+    name = label.name.replace(/^\d+ - /, ' ')
   }
 
-  render() {
-    const { label, isFilterLink, onClick, filters } = this.props
-    let { className, extra } = this.props
+  let _className = `${className} badge`
 
-    let name
-
-    className = className || ''
-    className += ' badge'
-
-    if (KANBAN_LABEL.test(label.name)) {
-      name = label.name.replace(/^\d+ - /, ' ')
-    } else {
-      name = label.name
-    }
-    if (label.color && isLight(label.color)) {
-      className += ' ' + 'is-light'
-    }
-    if (extra) {
-      extra = ` (${extra})`
-    }
-
-    if (isFilterLink) {
-      return (
-        <Link
-          to={filters.toggleLabel(label.name).url()}
-          key={name}
-          onClick={onClick}
-          className={className}
-          style={{ backgroundColor: '#' + label.color }}
-        >
-          {name}
-          {extra}
-        </Link>
-      )
-    } else {
-      return (
-        <BS.Badge
-          key={name}
-          {...this.props}
-          className={className}
-          onClick={onClick}
-          style={{ backgroundColor: '#' + label.color }}
-        >
-          {name}
-          {extra}
-        </BS.Badge>
-      )
-    }
+  if (label.color && isLight(label.color)) {
+    _className += ' is-light'
   }
+
+  let _extra
+
+  if (extra) {
+    _extra = ` (${extra})`
+  }
+
+  if (isFilterLink) {
+    return (
+      <Link
+        to={filters.toggleLabel(label.name).url()}
+        key={name}
+        onClick={onClick}
+        className={_className}
+        style={{ backgroundColor: `#${label.color}` }}
+      >
+        {name}
+        {_extra}
+      </Link>
+    )
+  }
+  return (
+    <BS.Badge
+      key={name}
+      {...this.props}
+      className={_className}
+      onClick={onClick}
+      style={{ backgroundColor: `#${label.color}` }}
+    >
+      {name}
+      {_extra}
+    </BS.Badge>
+  )
+}
+
+LabelBadge.propTypes = {
+  label: PropTypes.object.isRequired,
+  className: PropTypes.string,
+  extra: PropTypes.string,
 }
 
 export default LabelBadge

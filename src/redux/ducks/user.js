@@ -41,7 +41,7 @@ export const login = duck.defineAction(LOGIN, {
     return {
       payload: {
         token,
-        rootURL: rootURL ? rootURL : undefined,
+        rootURL: rootURL || undefined,
       },
       meta: {
         updateUserStorage: true,
@@ -88,7 +88,9 @@ export const fetchUser = duck.defineAction(FETCH_USER, {
   },
   resolve(state, { payload }) {
     if (state.info && state.info.repositories) {
-      payload.repositories = state.info.repositories // don't overwrite repos if already fetched
+      // don't overwrite repos if already fetched
+      // eslint-disable-next-line
+      payload.repositories = state.info.repositories
     }
     return {
       ...state,

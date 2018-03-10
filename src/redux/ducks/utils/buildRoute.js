@@ -35,10 +35,9 @@ export function convertRepoInfosToStr(repoInfos) {
     .map(({ repoOwner, repoName }) => {
       if (lastRepoOwner === repoOwner) {
         return repoName
-      } else {
-        lastRepoOwner = repoOwner
-        return [repoOwner, repoName].join(':')
       }
+      lastRepoOwner = repoOwner
+      return [repoOwner, repoName].join(':')
     })
     .join('|')
 }
@@ -47,9 +46,9 @@ function toQueryString(options) {
   if (!options || options === {}) {
     return ''
   }
-  let params = []
+  const params = []
   const ref = options || {}
-  for (const key in ref) {
+  Object.keys(ref).forEach(key => {
     let values = ref[key]
     if (!Array.isArray(values)) {
       values = [values]
@@ -57,23 +56,22 @@ function toQueryString(options) {
     values.forEach(val => {
       params.push(`${key}=${encodeURIComponent(val)}`)
     })
-  }
+  })
   if (params.length > 0) {
     return `?${params.join('&')}`
-  } else {
-    return ''
   }
+  return ''
 }
 
 function addParams(options, key, vals, defaults) {
   const arr = options[key] || []
   if (Array.isArray(vals)) {
     if (!defaults || JSON.stringify(defaults) !== JSON.stringify(vals)) {
-      options[key] = arr.concat(vals)
+      options[key] = arr.concat(vals) // eslint-disable-line
     }
   } else if (vals && (typeof defaults === 'undefined' || vals !== defaults)) {
     arr.push(vals)
-    options[key] = arr
+    options[key] = arr // eslint-disable-line
   } else {
     // it was null, so ignore it
   }
@@ -83,8 +81,8 @@ function addParams(options, key, vals, defaults) {
 export default function buildRoute(
   pathname,
   {
-    milestoneTitles,
-    labels,
+    milestoneTitles = [],
+    labels = [],
     columnLabels,
     username,
     states,
@@ -93,13 +91,10 @@ export default function buildRoute(
   } = {},
   repoInfos = []
 ) {
-  milestoneTitles = milestoneTitles || []
-  labels = labels || []
-
   // when not changing the page then keep the original path segment
   // **BUT:** Allow setting '' explicitly to override this
   if (pathname === null) {
-    pathname = routeSegmentName
+    pathname = routeSegmentName // eslint-disable-line
   }
 
   const options = {}
@@ -140,8 +135,8 @@ export class FilterBuilder {
     )
   }
   _toggleKey(key, value) {
-    let current = this.state[key]
-    let i = current.indexOf(value)
+    const current = this.state[key]
+    const i = current.indexOf(value)
     // if the string isn't found, try adding/removing the '-' to see if
     // there is an exclusion string that we can still remove
     // if (i < 0) {
@@ -190,7 +185,7 @@ export class FilterBuilder {
   toggleUsername(name) {
     const { username } = this.state
     if (username) {
-      name = null
+      name = null // eslint-disable-line
     }
     return this._immutable({
       username: name,

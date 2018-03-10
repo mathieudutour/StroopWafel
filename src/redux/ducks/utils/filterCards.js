@@ -25,15 +25,18 @@ export function filterByViewingMode(cards, viewingMode) {
       isFilteringPullRequests ? card.isPullRequest() : !card.isPullRequest()
     ) {
       // loop through all the related PR's. If one matches, remove this issue
-      let related = card.getRelated().filter(({ vertex }) => {
-        return isFilteringPullRequests
-          ? !vertex.isPullRequest()
-          : vertex.isPullRequest()
-      })
+      const related = card
+        .getRelated()
+        .filter(
+          ({ vertex }) =>
+            isFilteringPullRequests
+              ? !vertex.isPullRequest()
+              : vertex.isPullRequest()
+        )
 
-      const hasVisiblePullRequest = related.filter(({ vertex: otherCard }) => {
-        return allPossiblyRelatedCards[otherCard.key()]
-      })
+      const hasVisiblePullRequest = related.filter(
+        ({ vertex: otherCard }) => allPossiblyRelatedCards[otherCard.key()]
+      )
       return !hasVisiblePullRequest.length
     }
 
@@ -45,21 +48,16 @@ export function filterByLabels(cards, labels) {
   const hasUncategorizedLabel = labels.some(l => !l)
 
   return cards.filter(card => {
-    const containsAtLeastOneLabel = card.issue.labels.some(cardLabel => {
-      return labels.some(label => cardLabel.name === label)
-    })
+    const containsAtLeastOneLabel = card.issue.labels.some(cardLabel =>
+      labels.some(label => cardLabel.name === label)
+    )
     if (containsAtLeastOneLabel) {
       return true
     } else if (hasUncategorizedLabel) {
       // If the issue does not match any list then add it to the backlog
-      for (const l of card.issue.labels) {
-        if (KANBAN_LABEL.test(l.name)) {
-          return false
-        }
-      }
-      // no list labels, so include it in the backlog
-      return true
+      return card.issue.labels.every(l => !KANBAN_LABEL.test(l.name))
     }
+    return false
   })
 }
 

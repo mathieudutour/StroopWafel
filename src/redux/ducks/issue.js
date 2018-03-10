@@ -65,6 +65,7 @@ export const fetchLabels = duck.defineAction(FETCH_LABELS, {
   },
   resolve(state, { payload: labels }) {
     labels.forEach(l => {
+      // eslint-disable-next-line
       state.LABEL_CACHE[l.name] = l // mutating the state, that's bad
     })
     return {
@@ -91,7 +92,9 @@ export const updateLabel = duck.defineAction(UPDATE_LABEL, {
     }
   },
   resolve(state, { payload }) {
+    // eslint-disable-next-line
     ;(state.LABEL_CACHE[payload.oldName] || {}).name = payload.newName
+    // eslint-disable-next-line
     state.LABEL_CACHE[payload.newName] = state.LABEL_CACHE[payload.oldName]
     return {
       ...state,
@@ -119,6 +122,7 @@ export const deleteLabel = duck.defineAction(DELETE_LABEL, {
     }
   },
   resolve(state, { payload }) {
+    // eslint-disable-next-line
     delete state.LABEL_CACHE[payload.name]
     return {
       ...state,
@@ -184,10 +188,9 @@ function sortCards(cards) {
       return -1
     } else if (b.getDueAt()) {
       return 1
-    } else {
-      // newest on top
-      return Date.parse(b.getUpdatedAt()) - Date.parse(a.getUpdatedAt())
     }
+    // newest on top
+    return Date.parse(b.getUpdatedAt()) - Date.parse(a.getUpdatedAt())
   })
 }
 
@@ -204,6 +207,7 @@ export const _gotIssuesFromDB = duck.defineAction(GOT_ISSUES_FROM_DB, {
     state.GRAPH_CACHE.addCards(boundCards, getCard.bind(this, state.CARD_CACHE)) // mutating the state, that's bad
     boundCards.forEach(({ issue }) => {
       issue.labels.forEach(label => {
+        // eslint-disable-next-line
         state.LABEL_CACHE[label.name] = label // mutating the state, that's bad
       })
     })
@@ -240,6 +244,7 @@ export const fetchIssues = duck.defineAction(FETCH_ISSUES, {
     state.GRAPH_CACHE.addCards(boundCards, getCard.bind(this, state.CARD_CACHE)) // mutating the state, that's bad
     boundCards.forEach(({ issue }) => {
       issue.labels.forEach(label => {
+        // eslint-disable-next-line
         state.LABEL_CACHE[label.name] = label // mutating the state, that's bad
       })
     })
@@ -269,6 +274,7 @@ export const updateIssue = duck.defineAction(UPDATE_ISSUE, {
   },
   reducer(state, { payload }) {
     const key = toIssueKey(payload.card)
+    // eslint-disable-next-line
     state.CARD_CACHE[key] = {
       ...state.CARD_CACHE[key],
       ...payload.update,
@@ -302,16 +308,20 @@ export const moveIssues = duck.defineAction(MOVE_ISSUES, {
     const { label, milestone, user, oldUser } = payload.update
     function getNewCard(card) {
       if (label || label === null) {
+        // eslint-disable-next-line
         card.issue.labels = getNewLabels(card, label)
       } else if (milestone || milestone === null) {
+        // eslint-disable-next-line
         card.issue.milestone = milestone
       } else if (user || user === null) {
+        // eslint-disable-next-line
         card.issue.assignees = getNewAssignees(card, user, oldUser)
       }
       return card
     }
     payload.cards.forEach(card => {
       const key = toIssueKey(card)
+      // eslint-disable-next-line
       state.CARD_CACHE[key] = getNewCard(state.CARD_CACHE[key])
     })
     const cardsKeys = payload.cards.map(toIssueKey)

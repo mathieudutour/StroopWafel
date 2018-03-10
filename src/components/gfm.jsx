@@ -17,12 +17,9 @@ const UNCHECKED_RE = /^\[ \] /
 // HACK: Octokat converts underscores to camelCase so for now we do too
 const camelize = string => {
   if (string) {
-    return string.replace(/[_-]+(\w)/g, function(m) {
-      return m[1].toUpperCase()
-    })
-  } else {
-    return ''
+    return string.replace(/[_-]+(\w)/g, m => m[1].toUpperCase())
   }
+  return ''
 }
 
 function buildCheckbox(checked) {
@@ -35,32 +32,38 @@ function buildCheckbox(checked) {
 }
 
 class InnerMarkdown extends React.Component {
-  getRenderer = () => {
-    return {
-      link: (href, title, text) => {
-        const relatedIssue = !this.props.disableLinks && isRelatedIssue(href)
-        if (relatedIssue) {
-          const card = selectors.getCard(this.props.cards, relatedIssue)
-
-          return renderToString(
-            <IssueOrPullRequestBlurb
-              card={card || relatedIssue}
-              primaryRepoName={this.props.repoName}
-              primaryRepoOwner={this.props.repoOwner}
-              href={href}
-              context={((card || {}).issue || {}).title}
-            />
-          )
-        }
-        return `<a target="_blank" href="${href}" title="${title}">${text}</a>`
-      },
-    }
+  componentDidMount() {
+    this.updateDOM()
   }
+
+  componentDidUpdate() {
+    this.updateDOM()
+  }
+
+  getRenderer = () => ({
+    link: (href, title, text) => {
+      const relatedIssue = !this.props.disableLinks && isRelatedIssue(href)
+      if (relatedIssue) {
+        const card = selectors.getCard(this.props.cards, relatedIssue)
+
+        return renderToString(
+          <IssueOrPullRequestBlurb
+            card={card || relatedIssue}
+            primaryRepoName={this.props.repoName}
+            primaryRepoOwner={this.props.repoOwner}
+            href={href}
+            context={((card || {}).issue || {}).title}
+          />
+        )
+      }
+      return `<a target="_blank" href="${href}" title="${title}">${text}</a>`
+    },
+  })
 
   updateCheckboxes = () => {
     Array.from(this._ref.querySelectorAll('li')).forEach(listItem => {
-      let checked = CHECKED_RE.test(listItem.textContent)
-      let unchecked = !checked && UNCHECKED_RE.test(listItem.textContent)
+      const checked = CHECKED_RE.test(listItem.textContent)
+      const unchecked = !checked && UNCHECKED_RE.test(listItem.textContent)
 
       if (checked || unchecked) {
         const textChild = listItem.firstChild
@@ -84,14 +87,6 @@ class InnerMarkdown extends React.Component {
     this.updateCheckboxes()
   }
 
-  componentDidMount() {
-    this.updateDOM()
-  }
-
-  componentDidUpdate() {
-    this.updateDOM()
-  }
-
   replaceEmojis = text => {
     const emojisMap = this.props.emojis || {}
     return text.replace(EMOJI_RE, (m, p1) => {
@@ -99,9 +94,8 @@ class InnerMarkdown extends React.Component {
       const emojiUrl = emojisMap[camelize(emojiName)]
       if (emojiUrl) {
         return `<img class="emoji" src="${emojiUrl}" title="${p1}"/>`
-      } else {
-        return p1
       }
+      return p1
     })
   }
 
@@ -111,7 +105,7 @@ class InnerMarkdown extends React.Component {
       return null
     }
     const hasHtmlTags = /</.test(text)
-    const context = repoOwner + '/' + repoName
+    const context = `${repoOwner}/${repoName}`
     const textStripped = text.replace(/<!--[\s\S]*?-->/g, '')
     const textEmojis = this.replaceEmojis(textStripped)
     const html = ultramarked(linkify(textEmojis, context), {
@@ -121,34 +115,43 @@ class InnerMarkdown extends React.Component {
       // Issue titles and labels sometimes unintentionally have HTML tags in them.
       // but non-inline stuff (like Issue body) should not try to be smart.
       return <span className="markdown-body is-text">{text}</span>
-    } else {
-      if (html) {
-        if (inline) {
-          // Remove the wrapping `<p>` since this is supposed to be inline markdown
-          // (ie for a title)
-          const inlineHtml = html.replace(/^<p>/, '').replace(/<\/p>\n$/, '')
-          const props = {
-            className: classnames(['markdown-body', className]),
-            dangerouslySetInnerHTML: { __html: inlineHtml },
-          }
-          return <span ref={c => (this._ref = c)} {...props} />
-        } else {
-          const props = {
-            className: classnames(['markdown-body', className]),
-            dangerouslySetInnerHTML: { __html: html },
-          }
-          return <div ref={c => (this._ref = c)} {...props} />
-        }
-      } else {
-        return <div className="markdown-body is-empty" />
-      }
     }
+    if (html) {
+      if (inline) {
+        // Remove the wrapping `<p>` since this is supposed to be inline markdown
+        // (ie for a title)
+        const inlineHtml = html.replace(/^<p>/, '').replace(/<\/p>\n$/, '')
+        const props = {
+          className: classnames(['markdown-body', className]),
+          dangerouslySetInnerHTML: { __html: inlineHtml },
+        }
+        return (
+          <span
+            ref={c => {
+              this._ref = c
+            }}
+            {...props}
+          />
+        )
+      }
+      const props = {
+        className: classnames(['markdown-body', className]),
+        dangerouslySetInnerHTML: { __html: html },
+      }
+      return (
+        <div
+          ref={c => {
+            this._ref = c
+          }}
+          {...props}
+        />
+      )
+    }
+    return <div className="markdown-body is-empty" />
   }
 }
 
-export default connect(state => {
-  return {
-    emojis: state.emojis,
-    cards: state.issues.CARD_CACHE,
-  }
-})(InnerMarkdown)
+export default connect(state => ({
+  emojis: state.emojis,
+  cards: state.issues.CARD_CACHE,
+}))(InnerMarkdown)

@@ -2,9 +2,10 @@ import _ from 'underscore'
 import { UNCATEGORIZED_NAME, KANBAN_LABEL } from '../../../helpers'
 
 function matchesRepoInfo(repoInfos, card) {
-  return repoInfos.some(({ repoOwner, repoName }) => {
-    return repoOwner === card.repoOwner && repoName === card.repoName
-  })
+  return repoInfos.some(
+    ({ repoOwner, repoName }) =>
+      repoOwner === card.repoOwner && repoName === card.repoName
+  )
 }
 
 function isUser(issue, username) {
@@ -36,6 +37,8 @@ export function filterCard(
     labels,
     columnLabels,
   } = filter
+
+  /* eslint-disable no-param-reassign */
   if (!includedLabelNames) {
     includedLabelNames = labels.filter(t => t[0] !== '-')
   }
@@ -50,6 +53,7 @@ export function filterCard(
       .filter(m => m[0] === '-')
       .map(m => m.substring(1))
   }
+  /* eslint-enable */
   const { issue } = card
 
   // Skip the card if it is not one of the repos
@@ -73,10 +77,8 @@ export function filterCard(
       if (isUser(issue, username.substring(1))) {
         return false
       }
-    } else {
-      if (!isUser(issue, username)) {
-        return false
-      }
+    } else if (!isUser(issue, username)) {
+      return false
     }
   }
   // issue must be in one of the milestones (if milestones are selected)
@@ -124,9 +126,7 @@ export function filterCard(
       return false
     }
   }
-  const labelNames = issue.labels.map(label => {
-    return label.name
-  })
+  const labelNames = issue.labels.map(label => label.name)
   // issue must have all the tags (except UNCATEGORIZED_NAME)
   // and MUST NOT have any of the excluded tags
   // and must have at least 1 of the columnLabels (but one of those might be UNCATEGORIZED_NAME)
@@ -166,8 +166,8 @@ export default function filterCards(cards, filter, repoInfos) {
     .filter(m => m[0] === '-')
     .map(m => m.substring(1))
 
-  return cards.filter(card => {
-    return filterCard(
+  return cards.filter(card =>
+    filterCard(
       card,
       filter,
       repoInfos,
@@ -176,5 +176,5 @@ export default function filterCards(cards, filter, repoInfos) {
       includedMilestoneTitles,
       excludedMilestoneTitles
     )
-  })
+  )
 }

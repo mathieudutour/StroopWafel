@@ -5,6 +5,7 @@ import { fetchMilestones, fetchIssues } from '../../../redux/ducks/issue'
 import { selectors } from '../../../redux/ducks/filter'
 import { getCardColumn, sortByColumnName } from '../../../helpers'
 import LabelBadge from '../../label-badge'
+import AppNav from '../../app/nav'
 
 import d3 from 'd3' // eslint-disable-line
 import gantt from './gantt-chart'
@@ -110,8 +111,8 @@ class GanttChart extends React.Component {
         startDate: createdAt,
         endDate: dueAt || now,
         taskName: title,
-        status: status,
-        segments: segments,
+        status,
+        segments,
       }
     })
 
@@ -123,13 +124,9 @@ class GanttChart extends React.Component {
 
     const taskNames = tasks.map(({ taskName }) => taskName).sort()
 
-    tasks.sort(function(a, b) {
-      return a.endDate - b.endDate
-    })
+    tasks.sort((a, b) => a.endDate - b.endDate)
     const maxDate = (tasks[tasks.length - 1] || {}).endDate
-    tasks.sort(function(a, b) {
-      return a.startDate - b.startDate
-    })
+    tasks.sort((a, b) => a.startDate - b.startDate)
     // const minDate = tasks[0].startDate;
 
     const format = '%H:%M'
@@ -175,25 +172,30 @@ class GanttChart extends React.Component {
   }
 
   render() {
-    const { columns, columnCounts, milestones, filters } = this.props
+    const { columns, columnCounts, milestones, filters, params } = this.props
 
-    const legend = columns.map(label => {
-      return (
-        <LabelBadge
-          key={label.name}
-          label={label}
-          extra={columnCounts[label.name]}
-          filters={filters}
-        />
-      )
-    })
+    const legend = columns.map(label => (
+      <LabelBadge
+        key={label.name}
+        label={label}
+        extra={columnCounts[label.name]}
+        filters={filters}
+      />
+    ))
+
     let closedCount = 0
     milestones.forEach(milestone => {
       closedCount += milestone.closedIssues
     })
     return (
       <div className="-gantt-chart-and-legend">
-        <div ref={r => (this._ganttWrapper = r)} id="the-gantt-chart" />
+        <AppNav params={params} />
+        <div
+          ref={r => {
+            this._ganttWrapper = r
+          }}
+          id="the-gantt-chart"
+        />
         <h3>Legend</h3>
         <p>Blue vertical line is Today</p>
         <LabelBadge
@@ -214,20 +216,18 @@ class GanttChart extends React.Component {
 export default connect((state, ownProps) => {
   const { milestoneTitles } = state.filter
 
-  let { data, columns, columnCounts } = filterByMilestoneAndKanbanColumn(
-    state.issues.cards
-  )
+  const cards = filterByMilestoneAndKanbanColumn(state.issues.cards)
 
-  columns = columns.sort(sortByColumnName(true))
+  const { data, columnCounts } = cards
+
+  const columns = cards.columns.sort(sortByColumnName(true))
 
   // Remove milestones that are not in the URL filter
-  let milestones
+  let { milestones } = state.issues
   if (milestoneTitles.length > 0) {
-    milestones = state.issues.milestones.filter(milestone => {
-      return milestoneTitles.indexOf(milestone.title) >= 0
-    })
-  } else {
-    milestones = state.issues.milestones
+    milestones = milestones.filter(
+      milestone => milestoneTitles.indexOf(milestone.title) >= 0
+    )
   }
   const repoInfos = selectors.getReposFromParams(ownProps.params)
   return {

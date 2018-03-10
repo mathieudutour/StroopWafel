@@ -8,7 +8,7 @@ function getElement(text, repoOwner, repoName) {
   let html = ''
   if (text) {
     if (repoOwner) {
-      const context = repoOwner + '/' + repoName
+      const context = `${repoOwner}/${repoName}`
       html = ultramarked(linkify(text, context))
     } else {
       html = ultramarked(linkify(text))
@@ -30,9 +30,9 @@ function getTaskCounts(div) {
   let taskUnfinishedCount = 0
   Array.from(div.querySelectorAll('li')).forEach(listItem => {
     if (/^\[x\] /.test(listItem.textContent)) {
-      taskFinishedCount++
+      taskFinishedCount += 1
     } else if (/^\[ \] /.test(listItem.textContent)) {
-      taskUnfinishedCount++
+      taskUnfinishedCount += 1
     }
   })
   const taskTotalCount = taskFinishedCount + taskUnfinishedCount
@@ -48,16 +48,15 @@ function getIssueDueAt(div) {
     if (str) {
       // Try the iso string, then various text formats
       try {
-        let date = moment(str)
+        const date = moment(str)
         return date.toDate().getTime()
       } catch (e) {
-        let date = moment(str, 'MM/DD')
+        const date = moment(str, 'MM/DD')
         if (date.isValid()) {
           return date.toDate().getTime()
-        } else {
-          // fall back to parsing using the Date object
-          return Date.parse(str)
         }
+        // fall back to parsing using the Date object
+        return Date.parse(str)
       }
     } else {
       console.error(`Invalid due date format for "${el.outerHTML}"`)

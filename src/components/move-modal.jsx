@@ -33,18 +33,16 @@ class MoveModal extends React.Component {
     }
   }
 
-  onToggleCheckbox = card => {
-    return () => {
-      const { unCheckedCards } = this.state
-      const copy = { ...unCheckedCards }
-      const key = card.key()
-      if (!copy[key]) {
-        copy[key] = card
-      } else {
-        delete copy[key]
-      }
-      this.setState({ unCheckedCards: copy })
+  onToggleCheckbox = card => () => {
+    const { unCheckedCards } = this.state
+    const copy = { ...unCheckedCards }
+    const key = card.key()
+    if (!copy[key]) {
+      copy[key] = card
+    } else {
+      delete copy[key]
     }
+    this.setState({ unCheckedCards: copy })
   }
 
   moveIssue = props => {
@@ -181,15 +179,12 @@ class MoveModal extends React.Component {
           </BS.Modal.Footer>
         </BS.Modal>
       )
-    } else {
-      return null
     }
+    return null
   }
 }
 
-export default connect(state => {
-  return {
-    user: state.user.info,
-    movingIssue: state.issues.movingIssue,
-  }
-})(MoveModal)
+export default connect(state => ({
+  user: state.user.info,
+  movingIssue: state.issues.movingIssue,
+}))(MoveModal)

@@ -30,17 +30,17 @@ class Login extends React.Component {
   render() {
     const { token, rootURL } = this.props
 
-    let defaultRootURL =
+    const defaultRootURL =
       rootURL ||
       (() => {
-        let hostname = document.location.hostname
-        let tld = hostname
+        const { hostname } = document.location
+        const tld = hostname
           .split('.')
           .slice(-2)
           .join('.')
-        if (tld == 'github.io') return null
-        if (tld == 'localhost') return null
-        return 'https://' + hostname + '/api/v3'
+        if (tld === 'github.io') return null
+        if (tld === 'localhost') return null
+        return `https://${hostname}/api/v3`
       })()
 
     const footer = (
@@ -67,30 +67,27 @@ class Login extends React.Component {
           <BS.Modal.Title>GitHub Credentials</BS.Modal.Title>
         </BS.Modal.Header>
         <BS.Modal.Body className="modal-body">
-          <BS.FormControl
-            type="text"
-            defaultValue={token}
-            disabled={!!token}
-            placeholder="Enter GitHub token"
-            inputRef={r => (this._token = r)}
-          />
           <div className="github-token-instructions">
-            <h4>"Why do I need a token?"</h4>
+            <h4>How do I sign in?</h4>
             <p>
-              Unlinke other issue trackers, this one runs{' '}
-              <em>in your browser</em> via any{' '}
-              <a href="https://pages.github.com" target="_blank">
-                static webserver <LinkExternalIcon />
-              </a>{' '}
-              so secret application keys are not possible.
+              StroopWafel is completely serverless. It means that your
+              information never leave your computer. That's great but has a
+              tradeoff: the login is a bit more complicated than just clicking
+              on a button.
             </p>
-            <h4>"OK, That's fair. How do I create a token?"</h4>
+            <p>
+              You will need to manually give StroopWafel access to your GitHub
+              repository. To do so, you need to create a GitHub token. It will
+              never leave your computer.
+            </p>
+            <h4>OK, That's fair. How do I create a token?</h4>
             <ol>
               <li>
                 Go to{' '}
                 <a
                   href="https://github.com/settings/tokens/new"
                   target="_blank"
+                  rel="noopener noreferrer"
                 >
                   https://github.com/settings/tokens/new <LinkExternalIcon />
                 </a>
@@ -121,14 +118,28 @@ class Login extends React.Component {
                 click "Save"
               </li>
             </ol>
-            <h4>"GitHub Enterprise Endpoint"</h4>
+            <BS.FormControl
+              type="text"
+              defaultValue={token}
+              disabled={!!token}
+              placeholder="Enter GitHub token"
+              inputRef={r => {
+                this._token = r
+              }}
+            />
+            <h4>
+              I'm using GitHub Enterprise. How do I tell StroopWafel to look at
+              my server?
+            </h4>
             <p>
               If you need to set a custom API endpoint:<br />
               <BS.FormControl
                 type="text"
                 defaultValue={defaultRootURL}
                 placeholder="Enter GitHub API URL, e.g. https://github.example.com/api/v3"
-                inputRef={r => (this._rootURL = r)}
+                inputRef={r => {
+                  this._rootURL = r
+                }}
               />
             </p>
           </div>

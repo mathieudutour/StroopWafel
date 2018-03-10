@@ -9,7 +9,7 @@ const ItemTypes = {
 }
 
 const cardListTarget = {
-  drop: function(props) {
+  drop(props) {
     // TODO: Do something simpler than just props
     return props
   },
@@ -25,12 +25,12 @@ function collect(_connect, monitor) {
 class IssueList extends React.Component {
   state = { morePressedCount: 0, showCSVModal: false }
 
-  showAllIssues = () => {
-    this.setState({ showAllIssues: true })
-  }
-
   onClickMore = () => {
     this.setState({ morePressedCount: this.state.morePressedCount + 1 })
+  }
+
+  showAllIssues = () => {
+    this.setState({ showAllIssues: true })
   }
 
   toggleCSVModal = () => {
@@ -43,10 +43,8 @@ class IssueList extends React.Component {
     const { showAllIssues, morePressedCount } = this.state
     const multiple = 25 // Add 25 results at a time
 
-    let className = 'column-title'
-
     const header = (
-      <h2 className={className}>
+      <h2 className="column-title">
         {title} {children.length}
       </h2>
     )
