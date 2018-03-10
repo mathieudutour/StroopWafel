@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import * as BS from 'react-bootstrap'
 import { LinkExternalIcon } from 'react-octicons'
 
-import { login, logout } from '../redux/ducks/user'
+import { login } from '../redux/ducks/user'
 
 class Login extends React.Component {
   onSave = () => {
@@ -23,36 +23,16 @@ class Login extends React.Component {
     this.props.onHide()
   }
 
-  onClear = () => {
-    this.props.dispatch(logout())
-  }
-
   render() {
-    const { token, rootURL } = this.props
-
-    const defaultRootURL =
-      rootURL ||
-      (() => {
-        const { hostname } = document.location
-        const tld = hostname
-          .split('.')
-          .slice(-2)
-          .join('.')
-        if (tld === 'github.io') return null
-        if (tld === 'localhost') return null
-        return `https://${hostname}/api/v3`
-      })()
+    const { token } = this.props
 
     const footer = (
       <span>
-        <BS.Button bsStyle="primary" onClick={this.onSave}>
-          Save
-        </BS.Button>
-        <BS.Button bsStyle="default" onClick={this.onClear}>
-          Clear
-        </BS.Button>
-        <BS.Button bsStyle="default" onClick={this.onCancel}>
+        <BS.Button bsStyle="default" onClick={this.props.onHide}>
           Cancel
+        </BS.Button>
+        <BS.Button bsStyle="primary" onClick={this.onSave}>
+          Sign in
         </BS.Button>
       </span>
     )
@@ -63,10 +43,8 @@ class Login extends React.Component {
         container={this.props.container}
         onHide={this.props.onHide}
       >
-        <BS.Modal.Header closeButton>
-          <BS.Modal.Title>GitHub Credentials</BS.Modal.Title>
-        </BS.Modal.Header>
-        <BS.Modal.Body className="modal-body">
+        <BS.Modal.Header closeButton />
+        <BS.Modal.Body>
           <div className="github-token-instructions">
             <h4>How do I sign in?</h4>
             <p>
@@ -80,7 +58,7 @@ class Login extends React.Component {
               repository. To do so, you need to create a GitHub token. It will
               never leave your computer.
             </p>
-            <h4>OK, That's fair. How do I create a token?</h4>
+            <h4>OK, that's fair. How do I create a token?</h4>
             <ol>
               <li>
                 Go to{' '}
@@ -96,9 +74,7 @@ class Login extends React.Component {
                 Provide a descriptive title (like "StroopWafel") in the "Token
                 Description"
               </li>
-              <li>
-                Unselect all the checkboxes to just look at public repositories
-              </li>
+              <li>Unselect all the checkboxes to just look at repositories</li>
               <ul>
                 <li>
                   Select <code>public_repo</code> to be able to update/move
@@ -127,15 +103,10 @@ class Login extends React.Component {
                 this._token = r
               }}
             />
-            <h4>
-              I'm using GitHub Enterprise. How do I tell StroopWafel to look at
-              my server?
-            </h4>
+            <h4>I'm using GitHub Enterprise. How to use my server?</h4>
             <p>
-              If you need to set a custom API endpoint:<br />
               <BS.FormControl
                 type="text"
-                defaultValue={defaultRootURL}
                 placeholder="Enter GitHub API URL, e.g. https://github.example.com/api/v3"
                 inputRef={r => {
                   this._rootURL = r
@@ -144,7 +115,7 @@ class Login extends React.Component {
             </p>
           </div>
         </BS.Modal.Body>
-        <BS.Modal.Footer className="modal-footer">{footer}</BS.Modal.Footer>
+        <BS.Modal.Footer>{footer}</BS.Modal.Footer>
       </BS.Modal>
     )
   }

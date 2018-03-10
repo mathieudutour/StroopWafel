@@ -2,7 +2,8 @@
 @import './markdown-primer';
 @import './kanban';
 @import './topbar-nav';
-@import './add-project';
+@import './button';
+@import './modal';
 
 .user-select(@type) {
   -webkit-user-select: @type;
@@ -38,7 +39,7 @@
 }
 
 body {
-  background-color: #ddd;
+  background-color: #f6f7fb;
 }
 
 .app {
@@ -277,23 +278,11 @@ body {
   padding: 0;
 }
 
-@-webkit-keyframes icon-spin {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(359deg);
-    transform: rotate(359deg);
-  }
-}
 @keyframes icon-spin {
   0% {
-    -webkit-transform: rotate(0deg);
     transform: rotate(0deg);
   }
   100% {
-    -webkit-transform: rotate(359deg);
     transform: rotate(359deg);
   }
 }
@@ -323,16 +312,6 @@ i.icon-spin {
   &:hover,
   &:focus {
     background-color: lighten(#5cb85c, 10%) !important; // btn-success
-  }
-}
-
-.game-modal {
-  .modal-content {
-    width: 720px;
-    .game-wrapper {
-      width: 690px;
-      height: 534px;
-    }
   }
 }
 

@@ -1,8 +1,10 @@
 @import './issue-list';
+@import './design-tokens';
 
 .kanban-board {
   display: flex;
   height: 100%;
+  padding-top: 20px;
 
   .kanban-board-column {
     flex: 1 100%;
@@ -13,6 +15,21 @@
     vertical-align: top;
     padding-left: 1rem;
     padding-right: 0;
+
+    > .-drop-target > .panel-default {
+      background: @white;
+      border: 0;
+      border-radius: 3px;
+      box-shadow: 1px 1px 10px fade(@dark, 10%);
+      padding-bottom: 1rem;
+
+      .panel-heading {
+        background: transparent;
+        border: 0;
+        padding-top: 20px;
+        padding-bottom: 20px;
+      }
+    }
 
     &:last-child {
       padding-right: 1rem;

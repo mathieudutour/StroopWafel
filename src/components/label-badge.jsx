@@ -14,10 +14,10 @@ const LabelBadge = ({
   className = '',
   extra,
 }) => {
-  let name = { label }
+  let { name } = label
 
-  if (KANBAN_LABEL.test(label.name)) {
-    name = label.name.replace(/^\d+ - /, ' ')
+  if (KANBAN_LABEL.test(name)) {
+    name = name.replace(/^\d+ - /, ' ')
   }
 
   let _className = `${className} badge`

@@ -572,6 +572,7 @@ class Issue extends React.Component {
   onDragStart = () => {
     // Rotate the div just long enough for the browser to get a screenshot
     // so the element looks like it is being moved
+    console.log(ReactDOM.findDOMNode(this))
     const { style } = ReactDOM.findDOMNode(this) // eslint-disable-line
     style.transform = 'scale(1.5, 1,5)'
     style.webkitTransform = 'scale(1.5, 1,5)'

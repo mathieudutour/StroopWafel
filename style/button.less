@@ -1,0 +1,17 @@
+@import './design-tokens';
+
+.btn {
+  border: 0;
+  position: relative;
+  transition: all 0.2s ease-in-out;
+
+  &.btn-primary {
+    background: @primary;
+    box-shadow: 0 5px 10px fade(@primary, 50%);
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 10px fade(@primary, 50%);
+    }
+  }
+}

@@ -17,7 +17,7 @@ const ListGroup = ({ children }) => (
   <AutoSizer disableHeight>
     {({ width }) => (
       <List
-        height={document.documentElement.clientWidth - 203 - 200}
+        height={document.documentElement.clientHeight - 273}
         rowHeight={41}
         rowCount={children.length}
         rowRenderer={({ index, key, style }) => (
@@ -62,7 +62,7 @@ class RepoItem extends React.Component {
     }
 
     return (
-      <div className={classnames(classes)}>
+      <div className={classnames(classes)} onClick={this.handleSelect}>
         {repoIcon} {repo.name}
         {updatedAt}
         <input

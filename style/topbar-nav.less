@@ -1,4 +1,10 @@
+@import './design-tokens';
+
 .topbar-nav {
+  background: @white;
+  border: 0;
+  box-shadow: 0 1px 10px fade(@dark, 10%);
+
   // Add a check next to settings menu items
   .settings-item-checkbox[data-checked='true']::before {
     content: '\2713';

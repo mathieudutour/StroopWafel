@@ -1,3 +1,5 @@
+@import './design-tokens';
+
 .add-project {
   .dropdown {
     width: 100%;
@@ -16,6 +18,11 @@
   }
 
   .col-md-12 .panel {
-    background-color: #f8f8f8;
+    background-color: @background;
+    height: ~'calc(100vh - 270px)';
+  }
+
+  .list-group-item {
+    cursor: pointer;
   }
 }

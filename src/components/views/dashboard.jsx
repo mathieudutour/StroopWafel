@@ -16,7 +16,7 @@ const ListProjects = ({ children }) => (
   <AutoSizer disableHeight>
     {({ width }) => (
       <List
-        height={document.documentElement.clientWidth - 203 - 200}
+        height={document.documentElement.clientHeight - 200}
         rowHeight={41}
         rowCount={children.length}
         rowRenderer={({ index, key, style }) => (
@@ -41,7 +41,7 @@ const Dashboard = ({ projects, user, filter, params }) => {
 
   return (
     <BS.Grid className="dashboard">
-      <AppNav params={this.props.params} />
+      <AppNav params={params} />
       <h1>
         Your Projects{' '}
         <BS.Button href="/#/add-project">
