@@ -159,10 +159,12 @@ export default class Card {
   }
   fetchPRStatus(githubClient, options = {}) {
     if (!options.shouldShowPullRequestData) {
-      return Promise.resolve('user selected not to show additional PR data')
+      // user selected not to show additional PR data
+      return Promise.resolve(false)
     }
     if (githubClient.getRateLimitRemaining() < githubClient.LOW_RATE_LIMIT) {
-      return Promise.resolve('Rate limit low')
+      // Rate limit low
+      return Promise.resolve(false)
     }
     return this.fetchPR(githubClient, options).then(() => {
       if (!this._prStatusPromise || options.isForced) {
@@ -184,6 +186,7 @@ export default class Card {
               if (!isSame && !options.skipSavingToDb) {
                 Database.putCard(this)
               }
+              return !isSame
             })
         }
       }
@@ -242,11 +245,10 @@ export default class Card {
       if (this.isPullRequest()) {
         return this.fetchPRStatus(githubClient, options)
       }
-      return Promise.resolve(
-        'There is already an issue. no need to fetch again'
-      )
+      // There is already an issue. no need to fetch again
+      return Promise.resolve(false)
     }
-    return this.fetchIssue(githubClient, options)
+    return this.fetchIssue(githubClient, options).then(() => true)
   }
 }
 

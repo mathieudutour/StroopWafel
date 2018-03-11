@@ -75,98 +75,91 @@ function collect(_connect, monitor) {
   }
 }
 
-class IssueSimple extends React.Component {
-  render() {
-    const { card, filters } = this.props
-    const { issue, repoOwner, repoName } = card
+const IssueSimple = ({ card, filters, isDragging }) => {
+  const { issue, repoOwner, repoName } = card
 
-    const issueDueAt = card.getDueAt()
+  const issueDueAt = card.getDueAt()
 
-    // Defined by the collector
-    const { isDragging } = this.props
+  // PR updatedAt is updated when commits are pushed
+  const updatedAt = card.getUpdatedAt()
 
-    // PR updatedAt is updated when commits are pushed
-    const updatedAt = card.getUpdatedAt()
-
-    const user = issue.assignee
-    let assignedAvatar
-    if (user) {
-      assignedAvatar = (
-        <Link
-          to={filters.toggleUsername(user.login).url()}
-          className="avatar-filter"
-        >
-          <img
-            alt={user.login}
-            key="avatar"
-            className="avatar-image"
-            title={`Click to filter on ${user.login}`}
-            src={user.avatarUrl}
-          />
-        </Link>
-      )
-    }
-
-    // stop highlighting after 5s
-    const isUpdated = Date.now() - Date.parse(updatedAt) < 5 * 1000
-
-    let dueAt
-    if (issueDueAt) {
-      const dueAtClasses = {
-        'issue-due-at': true,
-        'is-overdue': issueDueAt < Date.now(),
-        'is-near':
-          issueDueAt > Date.now() &&
-          issueDueAt - Date.now() < 7 * 24 * 60 * 60 * 1000, // set it to be 1 week
-      }
-      dueAt = (
-        <span className={classnames(dueAtClasses)}>
-          <CalendarIcon />
-          {' due '}
-          <Time dateTime={issueDueAt} />
-        </span>
-      )
-    } else {
-      // Click to add due date
-    }
-
-    const classes = {
-      issue: true,
-      'is-simple-list': true,
-      'is-dragging': isDragging,
-      'is-updated': isUpdated,
-      'is-pull-request': card.isPullRequest(),
-      'is-merged': card.isPullRequestMerged(),
-      'is-merge-conflict': card.isPullRequest() && card.hasMergeConflict(),
-      'is-pull-request-to-different-branch':
-        card.isPullRequest() && !card.isPullRequestToDefaultBranch(),
-    }
-    return (
-      <BS.ListGroupItem
-        data-status-state={
-          card.isPullRequest() ? card.getPullRequestStatus() : null
-        }
-        onDragStart={this.onDragStart}
-        className={classnames(classes)}
-        data-state={issue.state}
+  const user = issue.assignee
+  let assignedAvatar
+  if (user) {
+    assignedAvatar = (
+      <Link
+        to={filters.toggleUsername(user.login).url()}
+        className="avatar-filter"
       >
-        {assignedAvatar}
-        <a className="issue-title" target="_blank" href={issue.htmlUrl}>
-          <GithubFlavoredMarkdown
-            className="-issue-title-text"
-            inline
-            repoOwner={repoOwner}
-            repoName={repoName}
-            text={issue.title}
-          />
-        </a>
-        {dueAt}
-        <a className="issue-number" target="_blank" href={issue.htmlUrl}>
-          #{issue.number}
-        </a>
-      </BS.ListGroupItem>
+        <img
+          alt={user.login}
+          key="avatar"
+          className="avatar-image"
+          title={`Click to filter on ${user.login}`}
+          src={user.avatarUrl}
+        />
+      </Link>
     )
   }
+
+  // stop highlighting after 5s
+  const isUpdated = Date.now() - Date.parse(updatedAt) < 5 * 1000
+
+  let dueAt
+  if (issueDueAt) {
+    const dueAtClasses = {
+      'issue-due-at': true,
+      'is-overdue': issueDueAt < Date.now(),
+      'is-near':
+        issueDueAt > Date.now() &&
+        issueDueAt - Date.now() < 7 * 24 * 60 * 60 * 1000, // set it to be 1 week
+    }
+    dueAt = (
+      <span className={classnames(dueAtClasses)}>
+        <CalendarIcon />
+        {' due '}
+        <Time dateTime={issueDueAt} />
+      </span>
+    )
+  } else {
+    // Click to add due date
+  }
+
+  const classes = {
+    issue: true,
+    'is-simple-list': true,
+    'is-dragging': isDragging,
+    'is-updated': isUpdated,
+    'is-pull-request': card.isPullRequest(),
+    'is-merged': card.isPullRequestMerged(),
+    'is-merge-conflict': card.isPullRequest() && card.hasMergeConflict(),
+    'is-pull-request-to-different-branch':
+      card.isPullRequest() && !card.isPullRequestToDefaultBranch(),
+  }
+  return (
+    <BS.ListGroupItem
+      data-status-state={
+        card.isPullRequest() ? card.getPullRequestStatus() : null
+      }
+      className={classnames(classes)}
+      data-state={issue.state}
+    >
+      {assignedAvatar}
+      <a className="issue-title" target="_blank" href={issue.htmlUrl}>
+        <GithubFlavoredMarkdown
+          className="-issue-title-text"
+          inline
+          repoOwner={repoOwner}
+          repoName={repoName}
+          text={issue.title}
+        />
+      </a>
+      {dueAt}
+      <a className="issue-number" target="_blank" href={issue.htmlUrl}>
+        #{issue.number}
+      </a>
+    </BS.ListGroupItem>
+  )
 }
 
 const CardDetailsModal = ({ card, ...rest }) => {
@@ -501,7 +494,6 @@ class IssueCard extends React.Component {
           data-status-state={
             card.isPullRequest() ? card.getPullRequestStatus().state : null
           }
-          onDragStart={this.onDragStart}
           className={classnames(classes)}
           data-state={issue.state}
         >
@@ -569,19 +561,6 @@ class Issue extends React.Component {
     Timer.offTick(this.pollPullRequestStatus)
   }
 
-  onDragStart = () => {
-    // Rotate the div just long enough for the browser to get a screenshot
-    // so the element looks like it is being moved
-    console.log(ReactDOM.findDOMNode(this))
-    const { style } = ReactDOM.findDOMNode(this) // eslint-disable-line
-    style.transform = 'scale(1.5, 1,5)'
-    style.webkitTransform = 'scale(1.5, 1,5)'
-    setTimeout(() => {
-      style.transform = ''
-      style.webkitTransform = ''
-    }, 100)
-  }
-
   pollPullRequestStatus = () => {
     const { card, settings } = this.props
     if (card.isPullRequest()) {
@@ -589,7 +568,9 @@ class Issue extends React.Component {
         .fetchPRStatus(window.githubClient, {
           shouldShowPullRequestData: settings.showPullRequestData,
         })
-        .then(() => this.forceUpdate())
+        .then(shouldUpdate => {
+          if (shouldUpdate) this.forceUpdate()
+        })
     }
   }
 
