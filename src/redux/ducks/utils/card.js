@@ -252,10 +252,10 @@ export default class Card {
   }
 }
 
-export const getCard = async card => {
+export const getCard = card => {
   if (card.issue) {
     // means that we probably got the data already so just cast it to a Card
-    return new Card(card)
+    return Promise.resolve(new Card(card))
   }
   return Database.getCard(card).then(data => {
     if (data) {
