@@ -1,7 +1,7 @@
 import Duck from 'reduck'
 
 import BipartiteGraph from './utils/bipartite-graph'
-import { toIssueKey, getCard } from './utils/card'
+import { toIssueKey } from './utils/card'
 import { getNewLabels, getNewAssignees } from '../middlewares/utils/moveIssues'
 
 import {
@@ -65,7 +65,7 @@ export const fetchLabels = duck.defineAction(FETCH_LABELS, {
   },
   resolve(state, { payload: labels }) {
     labels.forEach(l => {
-      window.LABEL_CACHE[l.name] = l // mutating the state, that's bad
+      window.LABEL_CACHE[l.name] = l
     })
     return {
       ...state,
@@ -119,7 +119,6 @@ export const deleteLabel = duck.defineAction(DELETE_LABEL, {
     }
   },
   resolve(state, { payload }) {
-    // eslint-disable-next-line
     delete window.LABEL_CACHE[payload.name]
     return {
       ...state,
@@ -198,10 +197,10 @@ export const _gotIssuesFromDB = duck.defineAction(GOT_ISSUES_FROM_DB, {
     }
   },
   reducer(state, { payload: cards }) {
-    window.GRAPH_CACHE.addCards(cards) // mutating the state, that's bad
+    window.GRAPH_CACHE.addCards(cards)
     cards.forEach(({ issue }) => {
       issue.labels.forEach(label => {
-        window.LABEL_CACHE[label.name] = label // mutating the state, that's bad
+        window.LABEL_CACHE[label.name] = label
       })
     })
     return {
@@ -231,10 +230,10 @@ export const fetchIssues = duck.defineAction(FETCH_ISSUES, {
     }
   },
   resolve(state, { payload: cards }) {
-    window.GRAPH_CACHE.addCards(cards) // mutating the state, that's bad
+    window.GRAPH_CACHE.addCards(cards)
     cards.forEach(({ issue }) => {
       issue.labels.forEach(label => {
-        window.LABEL_CACHE[label.name] = label // mutating the state, that's bad
+        window.LABEL_CACHE[label.name] = label
       })
     })
     return {
