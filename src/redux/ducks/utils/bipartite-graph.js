@@ -1,4 +1,4 @@
-import { toIssueKey } from './card'
+import { toIssueKey, getCard } from './card'
 
 class BipartiteGraph {
   constructor() {
@@ -7,11 +7,11 @@ class BipartiteGraph {
     // TODO: Refactor to simplify this datastructure
     this.edgesB = this.edgesA // = {};
   }
-  addCards(cards, getCard) {
+  addCards(cards) {
     cards.forEach(card => {
       if (card.issue) {
         const cardPath = toIssueKey(card)
-        // If an issue refers to some random repo then card.issue might be null
+
         const relatedIssues = card.getRelatedIssuesFromBody()
         // Show **all** related Issues/PR's (the graph is no longer bipartite)
         relatedIssues.forEach(({ repoOwner, repoName, number, fixes }) => {
@@ -20,10 +20,11 @@ class BipartiteGraph {
             repoName,
             number,
           })
-          const otherCard = getCard({ repoOwner, repoName, number })
-          if (otherCard) {
-            this._addEdge(otherCardPath, cardPath, otherCard, card, fixes)
-          }
+          getCard({ repoOwner, repoName, number }).then(otherCard => {
+            if (otherCard) {
+              this._addEdge(otherCardPath, cardPath, otherCard, card, fixes)
+            }
+          })
         })
       }
     })

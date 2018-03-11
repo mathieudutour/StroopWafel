@@ -4,13 +4,8 @@ import { getDataFromHtml } from '../../../gfm-dom'
 export const toIssueKey = ({ repoOwner, repoName, number }) =>
   `${repoOwner}/${repoName}#${number}`
 
-export const getCard = (CARD_CACHE, card) => {
-  const key = toIssueKey(card)
-  return CARD_CACHE[key]
-}
-
 export default class Card {
-  constructor(repoOwner, repoName, number, graph, issue, pr, prStatus) {
+  constructor({ repoOwner, repoName, number, issue, pr, prStatus }) {
     if (!repoOwner) {
       throw new Error('BUG! missing repoOwner')
     }
@@ -22,9 +17,8 @@ export default class Card {
     }
     this.repoOwner = repoOwner
     this.repoName = repoName
-    this.number = number
+    this.number = Number(number)
     this.issue = issue
-    this._graph = graph
     this.pr = pr
     this.prStatus = prStatus
     this._prPromise = pr ? Promise.resolve(pr) : null
@@ -78,13 +72,13 @@ export default class Card {
   }
   getRelated() {
     // return this._graph.getB(key).concat(this._graph.getA(key));
-    return this._graph.getB(toIssueKey(this))
+    return window.GRAPH_CACHE.getB(toIssueKey(this))
   }
   getRelatedIssues() {
-    return this._graph.getB(toIssueKey(this))
+    return window.GRAPH_CACHE.getB(toIssueKey(this))
   }
   getRelatedPullRequests() {
-    return this._graph.getA(toIssueKey(this))
+    return window.GRAPH_CACHE.getA(toIssueKey(this))
   }
   getUpdatedAt() {
     if (this.isPullRequest() && !this.pr) {
@@ -256,30 +250,15 @@ export default class Card {
   }
 }
 
-export const cardFactory = (CARD_CACHE, GRAPH_CACHE) => (
-  { repoOwner, repoName, number, issue, pr = null, prStatuses = null },
-  cast
-) => {
-  let card = getCard(CARD_CACHE, { repoOwner, repoName, number })
-  if (card && issue) {
-    card.resetPromisesAndState(issue, pr, prStatuses)
-    return card
-  } else if (card) {
-    return card
+export const getCard = async card => {
+  if (card.issue) {
+    // means that we probably got the data already so just cast it to a Card
+    return new Card(card)
   }
-  card = new Card(
-    repoOwner,
-    repoName,
-    number,
-    GRAPH_CACHE,
-    issue,
-    pr,
-    prStatuses
-  )
-  if (!cast) {
-    GRAPH_CACHE.addCards([card], getCard.bind(this, CARD_CACHE))
-  }
-  const key = toIssueKey({ repoOwner, repoName, number })
-  CARD_CACHE[key] = card // eslint-disable-line
-  return card
+  return Database.getCard(card).then(data => {
+    if (data) {
+      return new Card(data)
+    }
+    return undefined
+  })
 }

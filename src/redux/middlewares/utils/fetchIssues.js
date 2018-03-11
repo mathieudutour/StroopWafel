@@ -5,6 +5,7 @@ import * as Database from './indexedDB'
 import fetchLabels from './fetchLabels'
 import { filterCard } from './filterCards'
 import { _gotIssuesFromDB } from '../../ducks/issue'
+import Card from '../../ducks/utils/card'
 
 function emptyFilter() {
   return {
@@ -162,7 +163,7 @@ export default function fetchIssues(githubClient, filter, repoInfos, dispatch) {
   Database.fetchCards(filter, repoInfos)
     .then(cards => {
       if (!fetched) {
-        dispatch(_gotIssuesFromDB(cards))
+        dispatch(_gotIssuesFromDB(cards.map(c => new Card(c))))
       }
     })
     .catch(() => {})

@@ -45,10 +45,10 @@ class InnerMarkdown extends React.Component {
       const relatedIssue = !this.props.disableLinks && isRelatedIssue(href)
       if (relatedIssue) {
         const card = selectors.getCard(this.props.cards, relatedIssue)
-
+        console.log(((card || {}).issue || {}).title)
         return renderToString(
           <IssueOrPullRequestBlurb
-            card={card || relatedIssue}
+            card={relatedIssue}
             primaryRepoName={this.props.repoName}
             primaryRepoOwner={this.props.repoOwner}
             href={href}
@@ -153,5 +153,5 @@ class InnerMarkdown extends React.Component {
 
 export default connect(state => ({
   emojis: state.emojis,
-  cards: state.issues.CARD_CACHE,
+  getCard: state.issues.cards,
 }))(InnerMarkdown)

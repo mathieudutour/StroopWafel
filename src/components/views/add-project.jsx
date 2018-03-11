@@ -1,7 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import * as BS from 'react-bootstrap'
-import classnames from 'classnames'
 import { SyncIcon, LockIcon, RepoForkedIcon, RepoIcon } from 'react-octicons'
 import { createFilter } from 'react-search-input'
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer'
@@ -47,10 +46,6 @@ class RepoItem extends React.Component {
       repoIcon = <RepoIcon className="repo-icon" />
     }
 
-    const classes = {
-      'repo-item': true,
-    }
-
     let updatedAt = null
     if (repo.pushedAt) {
       updatedAt = (
@@ -62,7 +57,7 @@ class RepoItem extends React.Component {
     }
 
     return (
-      <div className={classnames(classes)} onClick={this.handleSelect}>
+      <div className="repo-item" onClick={this.handleSelect}>
         {repoIcon} {repo.name}
         {updatedAt}
         <input

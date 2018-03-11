@@ -19,6 +19,7 @@
     "react/no-multi-comp": 0,
     "react/no-unescaped-entities": 0,
     "react/prop-types": 0,
+    "jsx-a11y/anchor-is-valid": 0,
     "duck/meta-validation": [
       2,
       [

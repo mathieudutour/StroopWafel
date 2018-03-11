@@ -66,6 +66,14 @@ class AppNav extends React.Component {
     this.props.dispatch(fetchUser())
   }
 
+  onSignout = () => {
+    this.props.dispatch(logout())
+  }
+
+  onSignin = () => {
+    this.setState({ showModal: true })
+  }
+
   promptAndResetDatabases = () => {
     if (
       confirm(
@@ -79,7 +87,7 @@ class AppNav extends React.Component {
   }
 
   render() {
-    const { userInfo, repoInfos, settings, filters, LABEL_CACHE } = this.props
+    const { userInfo, repoInfos, settings, filters } = this.props
     const { showModal } = this.state
     const { username, labels } = filters.getState()
 
@@ -93,7 +101,7 @@ class AppNav extends React.Component {
     )
     const filtering = labels.map(labelName => {
       // TODO: HACK. Find a better way to update the color of labels
-      const label = LABEL_CACHE[labelName] || {
+      const label = window.LABEL_CACHE[labelName] || {
         name: labelName,
         color: 'ffffff',
       }
@@ -224,17 +232,12 @@ class AppNav extends React.Component {
           <BS.MenuItem onClick={this.promptAndResetDatabases}>
             Reset Local Cache...
           </BS.MenuItem>
-          <BS.MenuItem>
-            <span onClick={() => this.props.dispatch(logout())}>Sign Out</span>
-          </BS.MenuItem>
+          <BS.MenuItem onClick={this.onSignout}>Sign Out</BS.MenuItem>
         </BS.NavDropdown>
       )
     } else {
       loginButton = (
-        <BS.NavItem
-          className="sign-in"
-          onClick={() => this.setState({ showModal: true })}
-        >
+        <BS.NavItem className="sign-in" onClick={this.onSignin}>
           Sign In
         </BS.NavItem>
       )
@@ -312,7 +315,6 @@ export default connect((state, ownProps) => {
   return {
     userInfo: state.user.info,
     settings: state.settings,
-    LABEL_CACHE: state.issues.LABEL_CACHE,
     filters: new selectors.FilterBuilder(state.filter, repoInfos),
     repoInfos,
   }

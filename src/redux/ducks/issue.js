@@ -1,7 +1,7 @@
 import Duck from 'reduck'
 
 import BipartiteGraph from './utils/bipartite-graph'
-import { cardFactory, toIssueKey, getCard } from './utils/card'
+import { toIssueKey, getCard } from './utils/card'
 import { getNewLabels, getNewAssignees } from '../middlewares/utils/moveIssues'
 
 import {
@@ -19,10 +19,10 @@ import {
   CANCEL_MOVING_ISSUE,
 } from '../actions'
 
+window.GRAPH_CACHE = new BipartiteGraph()
+window.LABEL_CACHE = {}
+
 const initialState = {
-  GRAPH_CACHE: new BipartiteGraph(),
-  CARD_CACHE: {},
-  LABEL_CACHE: {},
   cards: [],
   labels: [],
   milestones: [],
@@ -65,8 +65,7 @@ export const fetchLabels = duck.defineAction(FETCH_LABELS, {
   },
   resolve(state, { payload: labels }) {
     labels.forEach(l => {
-      // eslint-disable-next-line
-      state.LABEL_CACHE[l.name] = l // mutating the state, that's bad
+      window.LABEL_CACHE[l.name] = l // mutating the state, that's bad
     })
     return {
       ...state,
@@ -92,10 +91,8 @@ export const updateLabel = duck.defineAction(UPDATE_LABEL, {
     }
   },
   resolve(state, { payload }) {
-    // eslint-disable-next-line
-    ;(state.LABEL_CACHE[payload.oldName] || {}).name = payload.newName
-    // eslint-disable-next-line
-    state.LABEL_CACHE[payload.newName] = state.LABEL_CACHE[payload.oldName]
+    ;(window.LABEL_CACHE[payload.oldName] || {}).name = payload.newName
+    window.LABEL_CACHE[payload.newName] = window.LABEL_CACHE[payload.oldName]
     return {
       ...state,
       labels: state.labels.map(l => {
@@ -123,7 +120,7 @@ export const deleteLabel = duck.defineAction(DELETE_LABEL, {
   },
   resolve(state, { payload }) {
     // eslint-disable-next-line
-    delete state.LABEL_CACHE[payload.name]
+    delete window.LABEL_CACHE[payload.name]
     return {
       ...state,
       labels: state.labels.filter(l => l.name !== payload.name),
@@ -201,22 +198,18 @@ export const _gotIssuesFromDB = duck.defineAction(GOT_ISSUES_FROM_DB, {
     }
   },
   reducer(state, { payload: cards }) {
-    const boundCards = cards.map(c =>
-      cardFactory(state.CARD_CACHE, state.GRAPH_CACHE)(c, true)
-    )
-    state.GRAPH_CACHE.addCards(boundCards, getCard.bind(this, state.CARD_CACHE)) // mutating the state, that's bad
-    boundCards.forEach(({ issue }) => {
+    window.GRAPH_CACHE.addCards(cards) // mutating the state, that's bad
+    cards.forEach(({ issue }) => {
       issue.labels.forEach(label => {
-        // eslint-disable-next-line
-        state.LABEL_CACHE[label.name] = label // mutating the state, that's bad
+        window.LABEL_CACHE[label.name] = label // mutating the state, that's bad
       })
     })
     return {
       ...state,
-      cards: sortCards(boundCards),
+      cards: sortCards(cards),
       labels: state.labels.length // if we haven't any labels yet, just take the ones in the cache
         ? state.labels
-        : Object.keys(state.LABEL_CACHE).map(k => state.LABEL_CACHE[k]),
+        : Object.keys(window.LABEL_CACHE).map(k => window.LABEL_CACHE[k]),
     }
   },
 })
@@ -238,20 +231,16 @@ export const fetchIssues = duck.defineAction(FETCH_ISSUES, {
     }
   },
   resolve(state, { payload: cards }) {
-    const boundCards = cards.map(c =>
-      cardFactory(state.CARD_CACHE, state.GRAPH_CACHE)(c, true)
-    )
-    state.GRAPH_CACHE.addCards(boundCards, getCard.bind(this, state.CARD_CACHE)) // mutating the state, that's bad
-    boundCards.forEach(({ issue }) => {
+    window.GRAPH_CACHE.addCards(cards) // mutating the state, that's bad
+    cards.forEach(({ issue }) => {
       issue.labels.forEach(label => {
-        // eslint-disable-next-line
-        state.LABEL_CACHE[label.name] = label // mutating the state, that's bad
+        window.LABEL_CACHE[label.name] = label // mutating the state, that's bad
       })
     })
     return {
       ...state,
       fetchingIssues: false,
-      cards: sortCards(boundCards),
+      cards: sortCards(cards),
     }
   },
   reject(state) {
@@ -274,15 +263,10 @@ export const updateIssue = duck.defineAction(UPDATE_ISSUE, {
   },
   reducer(state, { payload }) {
     const key = toIssueKey(payload.card)
-    // eslint-disable-next-line
-    state.CARD_CACHE[key] = {
-      ...state.CARD_CACHE[key],
-      ...payload.update,
-    }
     return {
       ...state,
       cards: state.cards.map(c => {
-        if (toIssueKey(c) === toIssueKey(payload.card)) {
+        if (toIssueKey(c) === key) {
           return {
             ...c,
             ...payload.update,
@@ -319,11 +303,6 @@ export const moveIssues = duck.defineAction(MOVE_ISSUES, {
       }
       return card
     }
-    payload.cards.forEach(card => {
-      const key = toIssueKey(card)
-      // eslint-disable-next-line
-      state.CARD_CACHE[key] = getNewCard(state.CARD_CACHE[key])
-    })
     const cardsKeys = payload.cards.map(toIssueKey)
     return {
       ...state,
@@ -339,7 +318,10 @@ export const moveIssues = duck.defineAction(MOVE_ISSUES, {
 })
 
 export const selectors = {
-  getCard,
+  getCard(cards, card) {
+    const key = toIssueKey(card)
+    return cards.find(c => toIssueKey(c) === key)
+  },
 }
 
 export default duck.reducer

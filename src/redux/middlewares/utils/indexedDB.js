@@ -7,7 +7,7 @@ import Card from '../../ducks/utils/card'
 //
 const db = new Dexie('stroopwafel')
 db.version(1).stores({
-  issues: 'id,[repoOwner+repoName],state',
+  issues: 'id,[repoOwner+repoName+number],state',
   repoLabels: '[repoOwner+repoName]',
   repositories: '[repoOwner+repoName]',
 })
@@ -29,11 +29,17 @@ export function fetchCards(filter, repoInfos) {
   }
   return query
     .each(value => {
-      const { repoOwner, repoName, issue, pr, status } = value
-      const { number } = issue
-      cards.push(new Card(repoOwner, repoName, number, null, issue, pr, status))
+      cards.push(new Card(value))
     })
     .then(() => filterCards(cards, filter, repoInfos))
+    .then(filteredCards => filteredCards.map(c => new Card(c)))
+}
+
+export function getCard({ repoOwner, repoName, number }) {
+  return db.issues
+    .where('[repoOwner+repoName+number]')
+    .equals([repoOwner, repoName, Number(number)])
+    .first()
 }
 
 function toUserValue(user) {
@@ -135,7 +141,7 @@ function toCardValue(card) {
   }
   if (issue) value.issue = toIssueValue(issue)
   if (pr) value.pr = toPRValue(pr)
-  if (prStatus) value.status = toStatusValue(prStatus)
+  if (prStatus) value.prStatus = toStatusValue(prStatus)
   return value
 }
 
