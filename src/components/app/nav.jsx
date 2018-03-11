@@ -21,7 +21,7 @@ import {
   VIEWING_MODE,
 } from '../../redux/ducks/settings'
 import { fetchUser, logout, resetDatabases } from '../../redux/ducks/user'
-import { selectors } from '../../redux/ducks/filter'
+import { selectors, goTo } from '../../redux/ducks/filter'
 
 import LoginModal from '../login-modal'
 import LabelBadge from '../label-badge'
@@ -60,18 +60,48 @@ class AppNav extends React.Component {
     userInfo: PropTypes.object,
   }
 
-  state = { showModal: false }
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      showModal: false,
+      search: this.props.filters.getState().search,
+    }
+  }
 
   componentDidMount() {
     this.props.dispatch(fetchUser())
   }
 
-  onSignout = () => {
-    this.props.dispatch(logout())
-  }
+  onSignout = () => this.props.dispatch(logout())
 
-  onSignin = () => {
-    this.setState({ showModal: true })
+  onSignin = () => this.setState({ showModal: true })
+
+  onClose = () => this.setState({ showModal: false })
+
+  onSearch = e => {
+    const searchTerm = e.target.value
+    this.setState(
+      {
+        search: searchTerm,
+      },
+      () => {
+        if (this._debounceTimeout) {
+          clearTimeout(this._debounceTimeout)
+        }
+
+        this._debounceTimeout = setTimeout(
+          () =>
+            this.props.dispatch(
+              goTo({
+                filter: this.props.filters.setSearch(searchTerm).getState(),
+                repoInfos: this.props.repoInfos,
+              })
+            ),
+          200
+        )
+      }
+    )
   }
 
   promptAndResetDatabases = () => {
@@ -92,9 +122,6 @@ class AppNav extends React.Component {
     const { userInfo, repoInfos, settings, filters } = this.props
     const { showModal } = this.state
     const { username, labels } = filters.getState()
-
-    // Note: The dashboard page does not have a list of repos
-    const close = () => this.setState({ showModal: false })
 
     const brand = (
       <Link to="/">
@@ -298,14 +325,22 @@ class AppNav extends React.Component {
               </span>
             </li>
           </BS.Nav>
-          <BS.Nav key="right" pullRight>
+          <BS.Nav pullRight>
             {repoInfos.length > 0 && (
               <FilterDropdown filters={this.props.filters} />
             )}
             {loginButton}
           </BS.Nav>
+          <BS.Navbar.Form pullRight>
+            <BS.FormControl
+              type="text"
+              placeholder="Search"
+              onChange={this.onSearch}
+              value={this.state.search}
+            />
+          </BS.Navbar.Form>
         </BS.Navbar>
-        <LoginModal show={showModal} container={this} onHide={close} />
+        <LoginModal show={showModal} container={this} onHide={this.onClose} />
         <MoveModal container={this} filters={filters} />
       </div>
     )

@@ -85,6 +85,73 @@ export function filterByUsers(cards, users) {
   })
 }
 
+const keys = [
+  'title',
+  'body',
+  'labels.name',
+  'milestone.title',
+  'state',
+  'user.login',
+  'assignees.login',
+]
+
+function flatten(array) {
+  return array.reduce(
+    (flat, toFlatten) =>
+      flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten),
+    []
+  )
+}
+
+function getValuesForKey(key, item) {
+  const _keys = key.split('.')
+  let results = [item]
+  _keys.forEach(_key => {
+    const tmp = []
+    results.forEach(result => {
+      if (result) {
+        if (result instanceof Array) {
+          const index = parseInt(_key, 10)
+          if (!Number.isNaN(index)) {
+            tmp.push(result[index])
+          } else {
+            result.forEach(res => {
+              tmp.push(res[_key])
+            })
+          }
+        } else if (result && typeof result.get === 'function') {
+          tmp.push(result.get(_key))
+        } else {
+          tmp.push(result[_key])
+        }
+      }
+    })
+
+    results = tmp
+  })
+
+  // Support arrays and Immutable lists.
+  results = results.map(r => (r && r.push && r.toArray ? r.toArray() : r))
+  results = flatten(results)
+
+  return results
+    .filter(r => typeof r === 'string' || typeof r === 'number')
+    .map(e => e.toString())
+}
+
+function searchStrings(strings, term) {
+  return strings.some(value => {
+    try {
+      if (value && value.search(term) !== -1) {
+        return true
+      }
+      return false
+    } catch (e) {
+      return false
+    }
+  })
+}
+
 export function filterCards(cards, settings, filter) {
   let filtered = filterByViewingMode(cards, settings.viewingMode)
 
@@ -107,6 +174,34 @@ export function filterCards(cards, settings, filter) {
     if (!filtered.length) {
       return filtered
     }
+  }
+
+  if (filter.search) {
+    const terms = filter.search.split(' ')
+    filtered = cards.filter(card => {
+      if (!card.issue) {
+        return false
+      }
+      return terms.every(term => {
+        // allow search in specific fields with the syntax `field:search`
+        let currentKeys = keys
+        let currentTerm = term
+
+        if (term.indexOf(':') !== -1) {
+          const parts = term.split(':')
+          const searchedField = parts[0]
+          currentTerm = parts[1] // eslint-disable-line
+          currentKeys = keys.filter(
+            key => key.toLowerCase().indexOf(searchedField) > -1
+          )
+        }
+
+        return currentKeys.some(key => {
+          const values = getValuesForKey(key, card.issue)
+          return searchStrings(values, currentTerm)
+        })
+      })
+    })
   }
 
   return filtered

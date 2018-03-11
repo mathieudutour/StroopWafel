@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import * as BS from 'react-bootstrap'
 import classnames from 'classnames'
-import { XIcon, SearchIcon, CheckIcon, MilestoneIcon } from 'react-octicons'
+import { XIcon, SettingsIcon, CheckIcon, MilestoneIcon } from 'react-octicons'
 import SavedFiltersButton from './saved-filters'
 import Time from '../time'
 
@@ -283,10 +283,13 @@ class FilterDropdown extends React.Component {
     const { filters } = this.props
     const { states } = filters.getState()
 
-    const items = ['open', 'closed'].map(state => ({
-      text: state,
-      isSelected: states.indexOf(state) >= 0,
-      toggleHref: filters.toggleState(state).url(),
+    const items = [
+      { text: 'Opened', value: 'open' },
+      { text: 'Closed', value: 'close' },
+    ].map(state => ({
+      text: state.text,
+      isSelected: states.indexOf(state.value) >= 0,
+      toggleHref: filters.toggleState(state.value).url(),
     }))
 
     return <FilterCategory noSearch items={items} name="states" />
@@ -296,10 +299,13 @@ class FilterDropdown extends React.Component {
     const { filters } = this.props
     const { types } = filters.getState()
 
-    const items = ['issue', 'pull-request'].map(type => ({
-      text: type,
-      isSelected: types.indexOf(type) >= 0,
-      toggleHref: filters.toggleType(type).url(),
+    const items = [
+      { text: 'Issue', value: 'issue' },
+      { text: 'Pull Request', value: 'pull-request' },
+    ].map(type => ({
+      text: type.text,
+      isSelected: types.indexOf(type.value) >= 0,
+      toggleHref: filters.toggleType(type.value).url(),
     }))
 
     return <FilterCategory noSearch items={items} name="types" />
@@ -380,20 +386,20 @@ class FilterDropdown extends React.Component {
       let state = ''
       if (states.length === 1) {
         if (states[0] === 'open') {
-          state = 'Open'
+          state = ' opened'
         } else if (states[0] === 'closed') {
-          state = 'Closed'
+          state = ' closed'
         } else {
           throw new Error('BUG: invalid state')
         }
       }
       if (types.length === 2) {
-        selectedMilestoneItem = `All ${state} Issues and Pull Requests`
+        selectedMilestoneItem = `All${state} Issues and Pull Requests`
       } else if (types.length === 1) {
         if (types[0] === 'issue') {
-          selectedMilestoneItem = `All ${state} Issues`
+          selectedMilestoneItem = `All${state} Issues`
         } else if (types[0] === 'pull-request') {
-          selectedMilestoneItem = `All ${state} Pull Requests`
+          selectedMilestoneItem = `All${state} Pull Requests`
         } else {
           throw new Error('BUG: invalid type')
         }
@@ -408,7 +414,7 @@ class FilterDropdown extends React.Component {
         className="filter-menu"
         title={
           <span className="-filter-title">
-            {selectedMilestoneItem} <SearchIcon />
+            {selectedMilestoneItem} <SettingsIcon />
           </span>
         }
         open={this.state.open}

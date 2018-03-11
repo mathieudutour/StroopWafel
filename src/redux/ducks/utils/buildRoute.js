@@ -104,7 +104,7 @@ export default function buildRoute(
   addParams(options, 'l', labels)
   addParams(options, 'c', columnLabels)
   addParams(options, 'u', username)
-  addParams(options, 's', search)
+  addParams(options, 'q', search)
   addParams(options, 's', states, DEFAULT_STATE.states) // include the defaults so the URL is cleaner
   addParams(options, 't', types, DEFAULT_STATE.types)
 
@@ -176,6 +176,12 @@ export class FilterBuilder {
   clearSearch() {
     return this._immutable({
       search: '',
+    })
+  }
+  setSearch(search) {
+    console.log(search)
+    return this._immutable({
+      search,
     })
   }
   toggleLabel(label) {
