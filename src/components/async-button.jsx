@@ -14,8 +14,8 @@ export default class extends React.Component {
 
   state = { val: null, asyncStatus: ASYNC_UNSTARTED }
 
-  componentDidUpdate(oldProps) {
-    if (this.props.action !== oldProps.action) {
+  componentWillReceiveProps(nextProps) {
+    if (this.props.action !== nextProps.action) {
       this.setState({ val: null, asyncStatus: ASYNC_UNSTARTED })
     }
   }

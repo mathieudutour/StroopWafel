@@ -75,6 +75,7 @@ class AppNav extends React.Component {
   }
 
   promptAndResetDatabases = () => {
+    /* eslint-disable no-restricted-globals */
     if (
       confirm(
         'Are you sure you want to reset all the local data? It will take some time to repopulate all the data from GitHub and you may need to reload the page'
@@ -84,6 +85,7 @@ class AppNav extends React.Component {
         alert('Local cache has been cleared')
       })
     }
+    /* eslint-enable */
   }
 
   render() {

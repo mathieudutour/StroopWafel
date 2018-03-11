@@ -5,10 +5,6 @@ export function isLight(hexColor) {
     g: parseInt(hexColor.substring(2, 4), 16),
     b: parseInt(hexColor.substring(4, 6), 16),
   }
-  // return Math.sqrt(
-  //    color.r * color.r * .299 +
-  //    color.g * color.g * .587 +
-  //    color.b * color.b * .114) >= 130;
   return (
     Math.sqrt(
       color.r * color.r * 0.099 +
@@ -23,13 +19,12 @@ export const KANBAN_LABEL = /^\d+ - /
 export const UNCATEGORIZED_NAME = '999 - Uncategorized'
 
 export function getCardColumn(card) {
-  for (const label of card.issue.labels) {
-    if (KANBAN_LABEL.test(label.name)) {
-      return label
+  return (
+    card.issue.labels.find(label => KANBAN_LABEL.test(label.name)) || {
+      name: UNCATEGORIZED_NAME,
+      color: 'cccccc',
     }
-  }
-  // not found. Must be uncategorized
-  return { name: UNCATEGORIZED_NAME, color: 'cccccc' }
+  )
 }
 
 function getColumnRank(label) {

@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-filename-extension */
 import 'babel-polyfill'
 import * as React from 'react' // eslint-disable-line
 import ReactDOM from 'react-dom'

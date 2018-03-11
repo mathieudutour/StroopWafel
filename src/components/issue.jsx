@@ -1,5 +1,4 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
 import * as BS from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { DragSource } from 'react-dnd'

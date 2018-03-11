@@ -5,6 +5,7 @@ export const DEFAULT_STATE = {
   types: ['issue', 'pull-request'],
   columnLabels: [],
   username: null,
+  search: '',
 }
 
 export function getReposFromParams(params) {
@@ -88,6 +89,7 @@ export default function buildRoute(
     states,
     types,
     routeSegmentName,
+    search,
   } = {},
   repoInfos = []
 ) {
@@ -102,6 +104,7 @@ export default function buildRoute(
   addParams(options, 'l', labels)
   addParams(options, 'c', columnLabels)
   addParams(options, 'u', username)
+  addParams(options, 's', search)
   addParams(options, 's', states, DEFAULT_STATE.states) // include the defaults so the URL is cleaner
   addParams(options, 't', types, DEFAULT_STATE.types)
 
@@ -168,6 +171,11 @@ export class FilterBuilder {
   clearMilestoneTitles() {
     return this._immutable({
       milestoneTitles: [],
+    })
+  }
+  clearSearch() {
+    return this._immutable({
+      search: '',
     })
   }
   toggleLabel(label) {

@@ -11,10 +11,13 @@ const IssueOrPullRequestBlurb = ({
 }) => {
   const { issue, repoName, repoOwner } = card
 
-  const multipleRepoName =
-    primaryRepoOwner !== repoOwner
-      ? `${repoOwner}/${repoName}`
-      : primaryRepoName !== repoName ? repoName : null
+  let multipleRepoName = null
+
+  if (primaryRepoOwner !== repoOwner) {
+    multipleRepoName = `${repoOwner}/${repoName}`
+  } else if (primaryRepoName !== repoName) {
+    multipleRepoName = repoName
+  }
 
   let blurbContext
   if (context) {
