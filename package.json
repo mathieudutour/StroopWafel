@@ -20,7 +20,7 @@
   "author": "Mathieu Dutour <mathieu@dutour.me>",
   "license": "MIT",
   "devDependencies": {
-    "ava": "^0.18.0",
+    "ava": "^5.2.0",
     "babel-core": "^6.3.17",
     "babel-eslint": "^8.2.1",
     "babel-loader": "^7.0.0",
